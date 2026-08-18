@@ -1,0 +1,55 @@
+{
+    "version": 2,
+    "framework": null,
+    "regions": [
+        "sin1"
+    ],
+    "functions": {
+        "api/index.php": {
+            "runtime": "vercel-php@0.7.3"
+        }
+    },
+    "routes": [
+        {
+            "src": "/(css|js|images|fonts|build)/(.*)",
+            "dest": "/public/$1/$2"
+        },
+        {
+            "src": "/robots.txt",
+            "dest": "/public/robots.txt"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/api/index.php"
+        }
+    ],
+    "build": {
+        "env": {
+            "APP_CONFIG_CACHE": "/tmp/config.php",
+            "APP_EVENTS_CACHE": "/tmp/events.php",
+            "APP_PACKAGES_CACHE": "/tmp/packages.php",
+            "APP_ROUTES_CACHE": "/tmp/routes.php",
+            "APP_SERVICES_CACHE": "/tmp/services.php",
+            "VIEW_COMPILED_PATH": "/tmp/views",
+            "DOMPDF_TEMP_DIR": "/tmp"
+        }
+    },
+    "env": {
+        "APP_ENV": "production",
+        "APP_DEBUG": "false",
+        "APP_TIMEZONE": "Asia/Jakarta",
+        "APP_LOCALE": "id",
+        "LOG_CHANNEL": "stderr",
+        "SESSION_DRIVER": "cookie",
+        "CACHE_STORE": "array",
+        "QUEUE_CONNECTION": "sync",
+        "APP_CONFIG_CACHE": "/tmp/config.php",
+        "APP_EVENTS_CACHE": "/tmp/events.php",
+        "APP_PACKAGES_CACHE": "/tmp/packages.php",
+        "APP_ROUTES_CACHE": "/tmp/routes.php",
+        "APP_SERVICES_CACHE": "/tmp/services.php",
+        "VIEW_COMPILED_PATH": "/tmp/views",
+        "DB_CONNECTION": "null",
+        "DOMPDF_TEMP_DIR": "/tmp"
+    }
+}
