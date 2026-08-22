@@ -1,0 +1,43 @@
+/.git
+/.github
+/.idea
+/.vscode
+/.zed
+/.fleet
+
+# Vendor akan di-install ulang oleh Vercel via composer install
+/vendor
+
+# Node modules (kalau nanti pakai vite/tailwind)
+/node_modules
+/public/build
+/public/hot
+/public/storage
+
+# Environment & rahasia — JANGAN pernah ke Vercel dari repo
+.env
+.env.backup
+.env.local
+.env.production
+
+# Cache lokal Laravel (Vercel bikin sendiri di /tmp)
+/bootstrap/cache/*.php
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Database lokal
+/database/database.sqlite*
+
+# Test/CI
+/.phpunit.cache
+/.phpunit.result.cache
+/tests
+
+# Dev tools
+Homestead.yaml
+Homestead.json
+auth.json
+npm-debug.log
+yarn-error.log

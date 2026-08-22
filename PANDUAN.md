@@ -11,6 +11,7 @@ Ikuti urutan ini dari atas ke bawah. Setiap tahap ada cara memeriksa hasilnya.
 
 | Tahap | Isi | Perkiraan waktu |
 |---|---|---|
+| 0 | Menyiapkan komputer (PHP, Composer, Git) | 15 menit, sekali saja |
 | 1 | Menyiapkan Firebase | 10 menit |
 | 2 | Menjalankan di komputer sendiri | 10 menit |
 | 3 | Mengunggah ke repositori GitHub baru | 5 menit |
@@ -18,6 +19,69 @@ Ikuti urutan ini dari atas ke bawah. Setiap tahap ada cara memeriksa hasilnya.
 | 5 | Pemeriksaan akhir | 5 menit |
 
 Yang perlu disiapkan: akun Google, akun GitHub, akun Vercel, PHP 8.2+, Composer, dan Git.
+
+---
+
+# TAHAP 0 — Menyiapkan Komputer (bila belum pernah)
+
+Lewati tahap ini bila di komputer Anda sudah terpasang PHP, Composer, dan Git.
+
+## 0.1 Membuka Command Prompt di dalam folder aplikasi
+
+Perintah seperti `php artisan` diketik di **Command Prompt** (jendela hitam),
+bukan di peramban.
+
+Cara tercepat di Windows:
+
+1. Buka **File Explorer**, masuk ke folder aplikasi (yang di dalamnya ada
+   berkas bernama `artisan`)
+2. Klik **kolom alamat** di bagian atas jendela
+3. Ketik `cmd` lalu tekan **Enter**
+
+Jendela hitam akan terbuka dan sudah berada di folder yang tepat.
+
+> Alternatif: tahan **Shift**, klik kanan pada area kosong di dalam folder,
+> lalu pilih **Open PowerShell window here**.
+
+## 0.2 Memeriksa PHP dan Composer
+
+Ketik dua perintah berikut, satu per satu:
+
+```
+php -v
+composer -V
+```
+
+Bila keduanya menampilkan nomor versi (misalnya `PHP 8.2.12`), komputer Anda
+sudah siap. Lanjut ke Tahap 1.
+
+Bila muncul `'php' is not recognized as an internal or external command`,
+berarti PHP belum terpasang.
+
+## 0.3 Memasang PHP, Composer, dan Git sekaligus
+
+Cara paling ringkas memakai **Laragon**, karena ketiganya terpasang sekaligus:
+
+1. Unduh **Laragon Full** di <https://laragon.org/download/>
+2. Pasang seperti aplikasi biasa
+3. Buka Laragon, klik **Start All**
+4. Klik tombol **Terminal** pada jendela Laragon
+5. Masuk ke folder aplikasi memakai perintah `cd`, contoh:
+
+   ```
+   cd C:\Users\NamaAnda\Downloads\sigap
+   ```
+
+Bila Anda sudah memakai **XAMPP**, PHP-nya sebenarnya sudah ada tetapi belum
+dikenali Command Prompt, dan Composer masih harus dipasang terpisah dari
+<https://getcomposer.org/download/>. Laragon umumnya lebih sedikit repotnya.
+
+Syarat versi: **PHP 8.2 atau lebih baru**.
+
+## 0.4 Menghentikan server
+
+Setelah `php artisan serve` berjalan, jendela hitam tidak boleh ditutup selama
+aplikasi dipakai. Untuk menghentikannya, tekan **Ctrl + C** di jendela tersebut.
 
 ---
 
@@ -32,7 +96,12 @@ Yang perlu disiapkan: akun Google, akun GitHub, akun Vercel, PHP 8.2+, Composer,
 
 ## 1.2 Menghidupkan Realtime Database
 
-1. Menu kiri → **Build → Realtime Database** → **Create Database**
+1. Menu kiri → **Product categories → Databases & Storage → Realtime Database** → **Create Database**
+
+   > Tampilan Firebase Console berubah-ubah. Bila Anda pernah melihat panduan
+   > lain yang menyebut menu **Build**, menu itu kini sudah diganti menjadi
+   > **Product categories**. Setelah dibuat, Realtime Database juga muncul di
+   > bagian **Project shortcuts** pada sidebar.
 2. Lokasi: pilih **Singapore (asia-southeast1)**
 3. Aturan keamanan: pilih **Start in locked mode**
 4. Catat alamat database yang muncul di bagian atas, bentuknya seperti:
@@ -63,33 +132,72 @@ memakai *service account*, yang kewenangannya berada di atas aturan ini.
 **Jangan** memakai `".read": true` — itu membuat seluruh data pengungsi dapat
 dibaca siapa saja di internet.
 
-## 1.4 Menghidupkan Storage
+## 1.4 Menghidupkan Storage (boleh dilewati dulu)
 
-1. Menu kiri → **Build → Storage** → **Get started**
+1. Menu kiri → **Product categories → Databases & Storage → Storage** → **Get started**
+
+   Bila Realtime Database sudah dibuat, biasanya **Storage** juga sudah muncul
+   di bagian **Project shortcuts** pada sidebar, jadi bisa langsung diklik
+   dari sana.
+
 2. Pilih **Start in production mode**, lokasi sama seperti database
 3. Catat nama bucket yang muncul, bentuknya seperti `sigap-rudenim.firebasestorage.app`
+4. Buka tab **Rules** pada Storage, pastikan isinya menutup akses publik:
 
-Lalu buka tab **Rules** pada Storage dan pastikan isinya:
+   ```
+   rules_version = '2';
+   service firebase.storage {
+     match /b/{bucket}/o {
+       match /{allPaths=**} {
+         allow read, write: if false;
+       }
+     }
+   }
+   ```
 
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if false;
-    }
-  }
-}
-```
+   Sama seperti Realtime Database, aplikasi tetap dapat mengunggah karena
+   memakai service account.
 
-Aplikasi tetap dapat mengunggah karena memakai service account.
+### Bila diminta upgrade ke paket Blaze
+
+Pada sebagian proyek, Firebase meminta upgrade dari paket **Spark** (gratis) ke
+**Blaze** sebelum Storage dapat diaktifkan. Anda punya dua pilihan:
+
+**Pilihan A — tetap di Spark, lewati Storage.**
+Biarkan `FIREBASE_STORAGE_DISK=local` di berkas `.env`. Seluruh fitur lain tetap
+berjalan penuh karena semuanya tersimpan di Realtime Database: data pengungsi,
+penempatan, keterangan dokumen, riwayat perubahan, dan laporan PDF maupun CSV.
+Yang belum berfungsi hanya penyimpanan berkas fisik yang menetap — di Vercel
+berkas unggahan akan hilang setelah permintaan selesai. Untuk keperluan
+demonstrasi, ini sudah memadai.
+
+**Pilihan B — upgrade ke Blaze.**
+Untuk pemakaian sekecil ini praktis tetap gratis karena kuota bebas biayanya
+besar, tetapi Google meminta kartu. Bila memilih ini, pasang **budget alert**
+di Google Cloud Console agar tidak ada tagihan tak terduga.
+
+Anda dapat mengaktifkan Storage kapan saja di kemudian hari **tanpa mengubah
+kode** — cukup ganti `FIREBASE_STORAGE_DISK` menjadi `firebase-rest` lalu
+deploy ulang.
+
 
 ## 1.5 Mengambil kunci service account
 
-1. Klik ikon gerigi di kiri atas → **Project settings**
-2. Buka tab **Service accounts**
-3. Klik **Generate new private key** → **Generate key**
-4. Sebuah berkas JSON akan terunduh. Simpan baik-baik.
+1. Klik **Settings** (ikon gerigi) pada sidebar kiri. Sebuah menu akan terbuka
+   berisi: General, Usage and billing, Integrations, **Service accounts**,
+   Data privacy, Users and permissions, dan Alerts.
+2. Pilih **Service accounts**.
+
+   > Pada tampilan Firebase Console yang lebih lama, bagian ini berupa *tab*
+   > di dalam halaman **Project settings**. Sekarang setiap tab tersebut sudah
+   > menjadi butir menu tersendiri.
+
+3. Halaman **Firebase Admin SDK** terbuka. Pilihan bahasa (Node.js, Java, dan
+   seterusnya) boleh diabaikan — tidak memengaruhi berkas yang dihasilkan.
+4. Klik tombol **Generate new private key** di bagian bawah, lalu **Generate key**
+   pada kotak konfirmasi.
+5. Sebuah berkas JSON otomatis terunduh, namanya kira-kira
+   `namaproyek-firebase-adminsdk-xxxxx.json`. Simpan baik-baik.
 
 > ⚠️ Berkas ini adalah kunci induk proyek Firebase Anda.
 > **Jangan pernah** memasukkannya ke GitHub atau membagikannya kepada siapa pun.
@@ -139,15 +247,36 @@ FIREBASE_STORAGE_BUCKET=sigap-rudenim.firebasestorage.app
 FIREBASE_SERVICE_ACCOUNT_JSON={"type":"service_account","project_id":"...seluruh isi berkas JSON tadi..."}
 ```
 
-Untuk `FIREBASE_SERVICE_ACCOUNT_JSON`, buka berkas JSON yang tadi terunduh,
-salin **seluruh isinya**, lalu tempel dalam **satu baris**. Jangan menekan Enter
-di tengah-tengah.
+### Mengisi FIREBASE_SERVICE_ACCOUNT_JSON
 
-> Kalau JSON-nya sulit ditempel dalam satu baris, ubah dulu menjadi base64:
-> ```bash
-> base64 -w 0 nama-berkas.json          # Mac/Linux
-> ```
-> Hasilnya boleh langsung ditempel sebagai nilai `FIREBASE_SERVICE_ACCOUNT_JSON`.
+**Ubah berkas JSON menjadi base64 lebih dulu.** Ini bukan sekadar saran:
+berkas `.env` tidak dapat menerima JSON mentah karena isinya mengandung spasi
+dan tanda kutip, sehingga Laravel akan menolak dengan pesan
+*"Failed to parse dotenv file. Encountered unexpected whitespace"*.
+
+**Windows (PowerShell):**
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("nama-berkas.json"))
+```
+
+**Mac / Linux:**
+
+```bash
+base64 -w 0 nama-berkas.json
+```
+
+Hasilnya berupa satu baris panjang tanpa spasi (sekitar 3.000 karakter).
+Salin seluruhnya, lalu tempel:
+
+```env
+FIREBASE_SERVICE_ACCOUNT_JSON=eyJ0eXBlIjoic2VydmljZV9hY2NvdW50Iiwi...
+```
+
+Tanpa tanda kutip, tanpa menekan Enter di tengah.
+
+Aplikasi mengenali kedua bentuk — base64 maupun JSON mentah — tetapi hanya
+base64 yang aman disimpan di `.env` maupun di dasbor Vercel.
 
 ## 2.3 Mengisi data awal
 
@@ -181,6 +310,8 @@ Buka <http://localhost:8000>, masuk memakai akun Admin di atas.
 Console — data itu harus langsung muncul di node `refugees`.
 
 ## 2.5 Menghidupkan unggah berkas ke Firebase Storage
+
+**Lewati bagian ini bila Anda memilih Pilihan A pada Tahap 1.4.**
 
 Di `.env`, ubah satu baris:
 
@@ -257,9 +388,9 @@ Isi enam variabel berikut. Untuk masing-masing, centang **Production**,
 |---|---|
 | `APP_KEY` | Jalankan `php artisan key:generate --show` di komputer, salin hasilnya utuh termasuk awalan `base64:` |
 | `FIREBASE_DATABASE_URL` | Alamat Realtime Database dari Tahap 1.2 |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | Seluruh isi berkas JSON service account |
-| `FIREBASE_STORAGE_BUCKET` | Nama bucket dari Tahap 1.4 |
-| `FIREBASE_STORAGE_DISK` | `firebase-rest` |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Hasil base64 dari berkas JSON (lihat Tahap 2.2) |
+| `FIREBASE_STORAGE_BUCKET` | Nama bucket dari Tahap 1.4 (kosongkan bila Storage dilewati) |
+| `FIREBASE_STORAGE_DISK` | `firebase-rest` — atau `local` bila Storage dilewati |
 | `SIGAP_SAMPLE_DATA_ENABLED` | `false` |
 
 Klik **Deploy** dan tunggu sekitar dua menit.
@@ -281,6 +412,7 @@ Buka alamat aplikasi Anda, lalu periksa satu per satu:
 - [ ] Menu Data Pengungsi menampilkan data
 - [ ] Bisa menambah satu data, dan datanya muncul di Firebase Console
 - [ ] Menu Dokumen bisa mengunggah berkas, lalu berkasnya muncul di Firebase Storage
+      (lewati bila Storage belum diaktifkan)
 - [ ] Menu Laporan bisa mengunduh PDF dan CSV
 - [ ] Menu Riwayat Perubahan mencatat semua tindakan tadi
 - [ ] `APP_DEBUG` bernilai `false` (atau tidak diisi sama sekali)
@@ -297,6 +429,7 @@ Galat yang paling sering terjadi:
 | Pesan | Penyebab |
 |---|---|
 | `No application encryption key has been specified` | `APP_KEY` belum diisi, atau sudah diisi tapi belum redeploy |
+| `Failed to parse dotenv file... unexpected whitespace` | Service account ditempel sebagai JSON mentah. Ubah ke base64 |
 | Data kosong padahal di Firebase ada | `FIREBASE_DATABASE_URL` salah, atau service account salah tempel |
 | Unggah dokumen ditolak | `FIREBASE_SERVICE_ACCOUNT_JSON` belum diisi, atau `FIREBASE_STORAGE_BUCKET` keliru |
 
