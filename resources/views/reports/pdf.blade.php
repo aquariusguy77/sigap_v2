@@ -43,7 +43,7 @@
 <div class="kop">
     <table>
         <tr>
-            <td class="logo"><img src="{{ $logo }}" alt="Lambang Imigrasi"></td>
+            <td class="logo">@if (filled($logo))<img src="{{ $logo }}" alt="Lambang Imigrasi">@endif</td>
             <td>
                 <div class="instansi">Kementerian Imigrasi dan Pemasyarakatan</div>
                 <div class="nama">Rumah Detensi Imigrasi Surabaya</div>
