@@ -63,12 +63,36 @@ class ReportController extends Controller
             'rows' => $this->reportExport->rows($report),
             'printedBy' => $this->currentActorName(),
             'printedAt' => now()->translatedFormat('d F Y, H:i') . ' WIB',
-            'logo' => config('branding.logo'),
+            'logo' => $this->printableLogo(),
         ])->setPaper('a4', $this->reportExport->orientation($report));
 
         $this->recordDownload($report, 'PDF');
 
         return $pdf->download($this->reportExport->fileName($report, 'pdf'));
+    }
+
+    /**
+     * Lambang yang aman ditempel dompdf.
+     *
+     * dompdf menolak PNG bila ekstensi gd tidak ada, dan melempar
+     * "The PHP GD extension is required, but is not installed." dari
+     * Cpdf::addPngFromFile(). Runtime PHP di Vercel tidak menyertakan gd,
+     * sehingga seluruh ekspor PDF berakhir 500 padahal isinya tidak
+     * bermasalah sama sekali.
+     *
+     * JPEG ditempel tanpa gd, jadi itu yang dipakai untuk laporan. Bila
+     * lambang JPEG belum tersedia, laporan tetap terbit tanpa lambang —
+     * kop yang kurang gambar jauh lebih baik daripada berkas yang gagal.
+     */
+    protected function printableLogo(): ?string
+    {
+        $print = config('branding.logo_print');
+
+        if (filled($print)) {
+            return $print;
+        }
+
+        return extension_loaded('gd') ? config('branding.logo') : null;
     }
 
     /**
