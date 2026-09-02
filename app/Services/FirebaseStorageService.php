@@ -13,13 +13,19 @@ use Throwable;
 /**
  * Menyimpan berkas dokumen pendukung.
  *
- * Dua mode tersedia, dipilih lewat FIREBASE_STORAGE_DISK:
+ * Tiga mode tersedia, dipilih lewat FIREBASE_STORAGE_DISK:
  *
  *  - "local"         : disimpan pada disk Laravel. Cocok untuk pengembangan di
  *                      komputer sendiri. TIDAK cocok untuk hosting serverless
- *                      karena berkas hilang setelah permintaan selesai.
+ *                      karena seluruh folder aplikasi bersifat baca-saja.
  *  - "firebase-rest" : diunggah ke Firebase Storage lewat REST API Google Cloud
- *                      Storage. Inilah mode yang dipakai di lingkungan produksi.
+ *                      Storage. Paling rapi, tetapi Firebase mensyaratkan paket
+ *                      Blaze sebelum bucket-nya bisa dibuat.
+ *  - "rtdb"          : isi berkas disimpan sebagai base64 di Realtime Database.
+ *                      Tidak memerlukan bucket maupun paket berbayar, sehingga
+ *                      bisa dipakai sejak paket Spark. Isinya ditaruh di node
+ *                      tersendiri (bawaan: document_files) supaya daftar
+ *                      dokumen tidak ikut menyeret berkasnya saat dibaca.
  *
  * Catatan tentang izin akses:
  * Access token Google hanya berlaku satu jam, sehingga tidak bisa ditaruh
@@ -34,7 +40,8 @@ class FirebaseStorageService
     protected const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 
     public function __construct(
-        protected FirebaseService $firebaseService
+        protected FirebaseService $firebaseService,
+        protected FirebaseRealtimeDatabaseService $realtimeDatabase
     ) {
     }
 
@@ -46,6 +53,11 @@ class FirebaseStorageService
     public function usesFirebase(): bool
     {
         return ($this->config()['storage_disk'] ?? 'local') === 'firebase-rest';
+    }
+
+    public function usesRealtimeDatabase(): bool
+    {
+        return ($this->config()['storage_disk'] ?? 'local') === 'rtdb';
     }
 
     /**
@@ -77,6 +89,10 @@ class FirebaseStorageService
             return array_merge($result, $this->storeOnFirebase($file, $path));
         }
 
+        if ($disk === 'rtdb') {
+            return array_merge($result, $this->storeOnRealtimeDatabase($file));
+        }
+
         try {
             $stored = $file->storeAs($prefix . '/' . $safeType, $fullName, $disk);
         } catch (Throwable $e) {
@@ -88,6 +104,106 @@ class FirebaseStorageService
         }
 
         return array_merge($result, ['download_url' => null]);
+    }
+
+    /**
+     * Menyimpan isi berkas sebagai base64 di Realtime Database.
+     *
+     * Isinya sengaja ditaruh di node terpisah, bukan menempel pada dokumen,
+     * karena daftar dokumen membaca seluruh node sekaligus. Kalau berkasnya
+     * ikut menempel, membuka halaman Dokumen berarti mengunduh semua berkas
+     * yang pernah diunggah.
+     *
+     * @throws DocumentUploadException
+     */
+    protected function storeOnRealtimeDatabase(UploadedFile $file): array
+    {
+        $maxKb = (int) ($this->config()['storage_rtdb_max_kb'] ?? 5120);
+        $sizeKb = (int) ceil($file->getSize() / 1024);
+
+        if ($maxKb > 0 && $sizeKb > $maxKb) {
+            throw DocumentUploadException::berkasTerlaluBesar($sizeKb, $maxKb);
+        }
+
+        $contents = @file_get_contents($file->getRealPath());
+
+        if ($contents === false) {
+            throw DocumentUploadException::berkasTidakTerbaca();
+        }
+
+        $key = $this->realtimeDatabase->pushNode($this->realtimeDatabaseNode(), [
+            'file_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getClientMimeType() ?: 'application/octet-stream',
+            'size' => $file->getSize(),
+            'uploaded_at' => now()->toIso8601String(),
+            'contents' => base64_encode($contents),
+        ]);
+
+        if (blank($key)) {
+            throw DocumentUploadException::realtimeDatabaseGagal(
+                (string) $this->realtimeDatabase->lastError()
+            );
+        }
+
+        return [
+            'storage_key' => $key,
+            'download_url' => route('documents.file', ['berkas' => $key]),
+        ];
+    }
+
+    /**
+     * Mengambil kembali berkas yang tersimpan di Realtime Database.
+     *
+     * @return array{file_name:string, mime_type:string, contents:string}|null
+     */
+    public function fetchFromRealtimeDatabase(string $key): ?array
+    {
+        $key = trim($key);
+
+        if ($key === '') {
+            return null;
+        }
+
+        $node = $this->realtimeDatabase->fetchNode(
+            $this->realtimeDatabase->path($this->realtimeDatabaseNode()) . '/' . $key
+        );
+
+        if (! is_array($node) || blank($node['contents'] ?? null)) {
+            return null;
+        }
+
+        $contents = base64_decode((string) $node['contents'], true);
+
+        if ($contents === false) {
+            return null;
+        }
+
+        return [
+            'file_name' => (string) ($node['file_name'] ?? 'dokumen'),
+            'mime_type' => (string) ($node['mime_type'] ?? 'application/octet-stream'),
+            'contents' => $contents,
+        ];
+    }
+
+    /**
+     * Menghapus berkas yang tersimpan di Realtime Database.
+     */
+    public function forgetFromRealtimeDatabase(?string $key): void
+    {
+        if (blank($key)) {
+            return;
+        }
+
+        $this->realtimeDatabase->deleteNode(
+            $this->realtimeDatabase->path($this->realtimeDatabaseNode()) . '/' . trim($key)
+        );
+    }
+
+    protected function realtimeDatabaseNode(): string
+    {
+        $node = trim((string) ($this->config()['storage_rtdb_node'] ?? 'document_files'), '/');
+
+        return $node !== '' ? $node : 'document_files';
     }
 
     /**

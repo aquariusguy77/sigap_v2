@@ -31,6 +31,17 @@ return [
         'storage_bucket' => env('FIREBASE_STORAGE_BUCKET', 'ralf-803d6.firebasestorage.app'),
         'storage_disk' => env('FIREBASE_STORAGE_DISK', 'local'),
         'storage_prefix' => env('FIREBASE_STORAGE_PREFIX', 'documents'),
+
+        /*
+         * Penyimpanan berkas di dalam Realtime Database (mode "rtdb").
+         *
+         * Firebase Storage mensyaratkan paket Blaze, sedangkan Realtime
+         * Database sudah tersedia sejak paket Spark. Pada mode ini isi berkas
+         * disimpan sebagai base64 di node tersendiri, terpisah dari metadata
+         * dokumen, supaya daftar dokumen tetap ringan dibaca.
+         */
+        'storage_rtdb_node' => env('FIREBASE_STORAGE_RTDB_NODE', 'document_files'),
+        'storage_rtdb_max_kb' => (int) env('FIREBASE_STORAGE_RTDB_MAX_KB', 5120),
         'storage_public_base_url' => env('FIREBASE_STORAGE_PUBLIC_BASE_URL'),
         'storage_bearer_token' => env('FIREBASE_STORAGE_BEARER_TOKEN'),
 

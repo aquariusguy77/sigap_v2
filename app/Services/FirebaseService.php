@@ -33,6 +33,8 @@ class FirebaseService
                 'storage_bucket' => $firebase['storage_bucket'] ?? 'ralf-803d6.firebasestorage.app',
                 'storage_disk' => $firebase['storage_disk'] ?? 'local',
                 'storage_prefix' => $firebase['storage_prefix'] ?? 'documents',
+                'storage_rtdb_node' => $firebase['storage_rtdb_node'] ?? 'document_files',
+                'storage_rtdb_max_kb' => (int) ($firebase['storage_rtdb_max_kb'] ?? 5120),
                 'storage_public_base_url' => $firebase['storage_public_base_url'] ?? null,
                 'storage_bearer_token' => $firebase['storage_bearer_token'] ?? null,
                 'database_secret' => $firebase['database_secret'] ?? null,

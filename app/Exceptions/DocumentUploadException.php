@@ -48,7 +48,34 @@ class DocumentUploadException extends RuntimeException
     {
         return new self(
             'Berkas gagal disimpan ke penyimpanan lokal. Pada lingkungan hosting ' .
-            'yang bersifat baca-saja, gunakan FIREBASE_STORAGE_DISK=firebase-rest.'
+            'yang bersifat baca-saja, gunakan FIREBASE_STORAGE_DISK=rtdb agar ' .
+            'berkas tersimpan di Realtime Database, atau firebase-rest bila ' .
+            'Firebase Storage sudah diaktifkan.'
         );
+    }
+
+    public static function berkasTerlaluBesar(int $sizeKb, int $maxKb): self
+    {
+        return new self(sprintf(
+            'Ukuran berkas %s MB melebihi batas %s MB untuk penyimpanan di ' .
+            'Realtime Database. Perkecil berkasnya, atau naikkan ' .
+            'FIREBASE_STORAGE_RTDB_MAX_KB bila memang diperlukan.',
+            number_format($sizeKb / 1024, 1, ',', '.'),
+            number_format($maxKb / 1024, 1, ',', '.')
+        ));
+    }
+
+    public static function berkasTidakTerbaca(): self
+    {
+        return new self('Berkas unggahan tidak dapat dibaca. Coba unggah ulang.');
+    }
+
+    public static function realtimeDatabaseGagal(string $detail = ''): self
+    {
+        return new self(trim(
+            'Berkas gagal disimpan ke Realtime Database. ' .
+            'Periksa FIREBASE_DATABASE_URL, kredensial service account, dan ' .
+            'aturan keamanan Realtime Database. ' . $detail
+        ));
     }
 }

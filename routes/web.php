@@ -34,6 +34,8 @@ Route::middleware(EnsureSigapAuthenticated::class)->group(function (): void {
     Route::delete('/penempatan/{placement}', [PlacementController::class, 'destroy'])->middleware(EnsureSigapAbility::class . ':full-access')->name('placements.destroy');
     Route::get('/dokumen', [DocumentController::class, 'index'])->name('documents.index');
     Route::get('/dokumen/tambah', [DocumentController::class, 'create'])->middleware(EnsureSigapAbility::class . ':manage-documents')->name('documents.create');
+    // Didaftarkan sebelum /dokumen/{document} agar "berkas" tidak dianggap id dokumen.
+    Route::get('/dokumen/berkas/{berkas}', [DocumentController::class, 'file'])->name('documents.file');
     Route::post('/dokumen', [DocumentController::class, 'store'])->middleware(EnsureSigapAbility::class . ':manage-documents')->name('documents.store');
     Route::get('/dokumen/{document}', [DocumentController::class, 'show'])->name('documents.show');
     Route::get('/dokumen/{document}/edit', [DocumentController::class, 'edit'])->middleware(EnsureSigapAbility::class . ':manage-documents')->name('documents.edit');

@@ -14,6 +14,8 @@ class DocumentRepository extends Repository
         'file_path',
         'download_url',
         'drive_file_id',
+        // Kunci node berkas pada mode penyimpanan "rtdb".
+        'storage_key',
         'verification_status',
         'uploaded_at',
         'uploaded_by',

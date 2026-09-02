@@ -14,6 +14,7 @@ use App\Services\SigapDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
 {
@@ -146,6 +147,32 @@ class DocumentController extends Controller
             ->with('status', 'Dokumen berhasil diperbarui.');
     }
 
+    /**
+     * Mengirimkan berkas yang tersimpan di Realtime Database.
+     *
+     * Berkas tidak berada di URL publik mana pun, sehingga hanya bisa diambil
+     * lewat rute ini — dan rute ini berada di dalam kelompok yang mewajibkan
+     * pengguna sudah masuk.
+     */
+    public function file(string $berkas): StreamedResponse
+    {
+        $this->ensureAbility('view-reports');
+
+        $stored = $this->firebaseStorage->fetchFromRealtimeDatabase($berkas);
+
+        abort_if($stored === null, 404, 'Berkas dokumen tidak ditemukan.');
+
+        return response()->streamDownload(
+            fn () => print($stored['contents']),
+            $stored['file_name'],
+            [
+                'Content-Type' => $stored['mime_type'],
+                'Content-Length' => (string) strlen($stored['contents']),
+                'Cache-Control' => 'no-store',
+            ]
+        );
+    }
+
     public function destroy(string $document): RedirectResponse
     {
         $this->ensureAbility('full-access');
@@ -156,6 +183,9 @@ class DocumentController extends Controller
         } catch (FirebaseWriteException $e) {
             return back()->withErrors(['delete' => $e->getMessage()]);
         }
+
+        // Berkasnya ikut dibuang agar tidak menumpuk tanpa pemilik di Firebase.
+        $this->firebaseStorage->forgetFromRealtimeDatabase($existing->storage_key);
 
         $this->audits->record([
             'refugee_id' => $existing->refugee_id,
@@ -188,11 +218,18 @@ class DocumentController extends Controller
             $payload['file_path'] = $stored['path'];
             $payload['download_url'] = $stored['download_url'] ?? null;
             $payload['drive_file_id'] = $payload['drive_file_id'] ?: $stored['firebase_document_key'];
+            $payload['storage_key'] = $stored['storage_key'] ?? null;
+
+            // Berkas lama tidak lagi dirujuk siapa pun, jadi tidak perlu disimpan.
+            if ($existing !== null) {
+                $this->firebaseStorage->forgetFromRealtimeDatabase($existing->storage_key);
+            }
         } elseif ($existing !== null) {
             $payload['file_name'] = $payload['file_name'] ?: $existing->file_name;
             $payload['file_path'] = $payload['file_path'] ?: $existing->file_path;
             $payload['download_url'] = $existing->download_url;
             $payload['drive_file_id'] = $payload['drive_file_id'] ?: $existing->drive_file_id;
+            $payload['storage_key'] = $existing->storage_key;
         }
 
         $refugee = filled($payload['refugee_id'] ?? null)
