@@ -33,33 +33,7 @@
         </div>
     </section>
 
-    @if (!empty($placementView['has_map']))
-        <section class="panel" style="margin-top:14px;">
-            <div class="section-head">
-                <div>
-                    <span class="section-tag"><x-icon name="location" class="chip-icon" />Pengawasan Lapangan</span>
-                    <h3>Menuju tempat tinggal pengungsi</h3>
-                    <p class="section-intro">
-                        Pengungsi mandiri tinggal menyebar, tidak terpusat seperti di Community House.
-                        Buka petunjuk arah di bawah ini langsung dari ponsel saat hendak berangkat.
-                    </p>
-                </div>
-            </div>
-            <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                <a class="btn btn-primary" href="{{ $placementView['directions_url'] }}" target="_blank" rel="noopener">
-                    <x-icon name="location" class="chip-icon" /> Petunjuk Arah
-                </a>
-                <a class="btn btn-ghost" href="{{ $placementView['map_url'] }}" target="_blank" rel="noopener">
-                    <x-icon name="search" class="chip-icon" /> Lihat di Peta
-                </a>
-            </div>
-            @if (blank($placementView['latitude'] ?? null))
-                <p class="table-meta" style="margin-top:12px;">
-                    Titik peta masih dicari berdasarkan alamat. Agar tepat sasaran, lengkapi lintang dan bujur lewat menu Ubah Penempatan.
-                </p>
-            @endif
-        </section>
-    @endif
+    @include('partials._peta-lokasi', ['peta' => $placementView])
 
     <section class="double-grid">
         <div class="panel">

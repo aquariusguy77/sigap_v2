@@ -33,6 +33,10 @@
         </div>
     </section>
 
+    @if (filled($placement))
+        @include('partials._peta-lokasi', ['peta' => $placement, 'judul' => 'Menuju tempat tinggal ' . $refugee->name])
+    @endif
+
     <section class="triple-grid">
         <div class="panel">
             <div class="section-head">
@@ -56,6 +60,7 @@
             </div>
             <div class="list-group">
                 <article class="list-item"><strong>Lokasi</strong><p>{{ $placement['location_name'] ?? ($refugee->location ?: '-') }}</p></article>
+                <article class="list-item"><strong>Kategori</strong><p>{{ $placement['category_label'] ?? '-' }}</p></article>
                 <article class="list-item"><strong>Status</strong><p>{{ $placement['placement_status'] ?? '-' }}</p></article>
                 <article class="list-item"><strong>Catatan</strong><p>{{ $placement['notes'] ?? 'Belum ada data penempatan.' }}</p></article>
             </div>

@@ -45,6 +45,9 @@ class PlacementUpsertRequest extends FormRequest
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
 
+            // Kolom bantu; isinya sudah diurai menjadi lintang dan bujur di atas.
+            'coordinate_paste' => ['nullable', 'string', 'max:500'],
+
             'entered_at' => ['required', 'date', 'before_or_equal:today'],
             'exited_at' => ['nullable', 'date', 'after_or_equal:entered_at'],
             'placement_status' => ['required', Rule::in(['Aktif', 'Mutasi', 'Selesai', 'Transit'])],
@@ -68,9 +71,57 @@ class PlacementUpsertRequest extends FormRequest
         });
     }
 
+    /**
+     * Membaca titik koordinat dari teks yang ditempel petugas.
+     *
+     * Alur yang dipakai di lapangan: buka Google Maps di titik rumah, tekan
+     * lama, lalu salin. Yang tersalin bisa berupa sepasang angka, bisa pula
+     * tautan peta. Keduanya diterima di sini supaya petugas tidak perlu
+     * memisahkan lintang dan bujur sendiri.
+     *
+     * Tautan pendek maps.app.goo.gl tidak dapat dibaca karena titiknya baru
+     * muncul setelah tautan itu diikuti; gunakan salin koordinat, bukan bagikan.
+     *
+     * @return array{0: string, 1: string}|null
+     */
+    protected function parseCoordinate(string $value): ?array
+    {
+        $value = trim($value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        // Bentuk tautan Google Maps: .../@-7.348123,112.727456,17z
+        if (preg_match('/@(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)/', $value, $m)) {
+            return [$m[1], $m[2]];
+        }
+
+        // Sepasang angka, baik ditempel apa adanya maupun dari parameter q=
+        if (preg_match('/(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/', $value, $m)) {
+            return [$m[1], $m[2]];
+        }
+
+        return null;
+    }
+
     protected function prepareForValidation(): void
     {
         $category = strtolower(trim((string) $this->input('category'))) === 'mandiri' ? 'mandiri' : 'iom';
+
+        /*
+         * Kolom tempel diproses lebih dulu, tetapi tidak menimpa lintang dan
+         * bujur yang sudah terisi — nilai yang sudah ada lebih berhak.
+         */
+        if ($category === 'mandiri'
+            && blank($this->input('latitude'))
+            && blank($this->input('longitude'))) {
+            $parsed = $this->parseCoordinate((string) $this->input('coordinate_paste', ''));
+
+            if ($parsed !== null) {
+                $this->merge(['latitude' => $parsed[0], 'longitude' => $parsed[1]]);
+            }
+        }
 
         $this->merge([
             'category' => $category,

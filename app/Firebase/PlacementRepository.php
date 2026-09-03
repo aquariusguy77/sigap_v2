@@ -47,6 +47,8 @@ class PlacementRepository extends Repository
         $payload['map_url'] = $this->mapUrl($destination);
         $payload['directions_url'] = $this->directionsUrl($destination);
         $payload['has_map'] = filled($destination);
+        $payload['embed_url'] = $this->embedUrl($payload);
+        $payload['has_preview'] = filled($payload['embed_url']);
 
         return $payload;
     }
@@ -104,6 +106,49 @@ class PlacementRepository extends Repository
         }
 
         return trim((string) ($payload['address'] ?? ''));
+    }
+
+    /**
+     * Alamat peta kecil yang ditanam di halaman detail.
+     *
+     * Memakai peta sematan OpenStreetMap, bukan Google Maps, karena sematan
+     * Google memerlukan kunci API beserta akun penagihan Google Cloud.
+     * OpenStreetMap boleh disematkan tanpa kunci maupun biaya, dan cukup untuk
+     * memberi gambaran letak rumah. Tombol menuju Google Maps tetap tersedia
+     * untuk navigasi sesungguhnya.
+     *
+     * Peta sematan hanya bisa menunjuk koordinat, tidak bisa mencari alamat.
+     * Karena itu penempatan yang belum berkoordinat tidak menampilkan peta,
+     * melainkan ajakan untuk menetapkan titiknya lebih dulu.
+     */
+    protected function embedUrl(array $payload): ?string
+    {
+        if (($payload['category'] ?? 'iom') !== 'mandiri') {
+            return null;
+        }
+
+        $lat = $payload['latitude'] ?? null;
+        $lng = $payload['longitude'] ?? null;
+
+        if (! is_numeric($lat) || ! is_numeric($lng)) {
+            return null;
+        }
+
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+
+        // Kotak pandang secukupnya: kira-kira dua ratus meter mengelilingi titik.
+        $bbox = implode(',', [
+            round($lng - 0.0022, 6),
+            round($lat - 0.0016, 6),
+            round($lng + 0.0022, 6),
+            round($lat + 0.0016, 6),
+        ]);
+
+        return 'https://www.openstreetmap.org/export/embed.html'
+            . '?bbox=' . rawurlencode($bbox)
+            . '&layer=mapnik'
+            . '&marker=' . rawurlencode($lat . ',' . $lng);
     }
 
     protected function mapUrl(string $destination): ?string
