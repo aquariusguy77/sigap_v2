@@ -29,7 +29,7 @@ class RefugeeRepository extends Repository
         $payload['name'] = $payload['name'] ?? 'Tanpa nama';
         $payload['internal_id'] = $payload['internal_id'] ?? strtoupper((string) $payload['id']);
         $payload['nationality'] = $payload['nationality'] ?? '-';
-        $payload['status'] = $payload['status'] ?? 'Verifikasi';
+        $payload['status'] = $payload['status'] ?? 'Perlu Verifikasi';
         $payload['location'] = $payload['location'] ?? '-';
         $payload['document_status'] = $payload['document_status'] ?? 'Belum Lengkap';
         $payload['updated_at_label'] = $this->label($payload['updated_at'] ?? null);

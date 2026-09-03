@@ -65,6 +65,29 @@ return [
             'CH Puspa Agro',
             'CH Green Bamboo',
         ],
+
+        /*
+         * Status data pengungsi. Hanya dua yang dipakai sehari-hari: yang
+         * datanya sudah beres, dan yang masih menunggu pemeriksaan supervisor.
+         */
+        'refugee_statuses' => [
+            'Aktif',
+            'Perlu Verifikasi',
+        ],
+
+        /*
+         * Lokasi hunian pada data pengungsi.
+         *
+         * Dua Community House disebut namanya, sedangkan pengungsi yang
+         * mencari tempat tinggal sendiri cukup ditandai "Pengungsi Mandiri".
+         * Alamat rincinya dicatat pada menu Penempatan, bukan di sini, karena
+         * di sanalah tersedia kolom alamat beserta koordinat dan petunjuk arah.
+         */
+        'refugee_locations' => [
+            'CH Puspa Agro',
+            'CH Green Bamboo',
+            'Pengungsi Mandiri',
+        ],
     ],
 
     'firebase' => [

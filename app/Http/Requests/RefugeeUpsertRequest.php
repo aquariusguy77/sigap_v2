@@ -22,8 +22,8 @@ class RefugeeUpsertRequest extends FormRequest
             'name' => ['required', 'string', 'min:3', 'max:150', 'regex:/^[\pL\s\.\'\-]+$/u'],
             'nationality' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\.\'\-]+$/u'],
             'unhcr_number' => ['nullable', 'string', 'max:100', 'regex:/^[A-Z0-9\-\/]+$/'],
-            'status' => ['required', Rule::in(['Aktif', 'Verifikasi', 'Mutasi'])],
-            'location' => ['required', 'string', 'min:3', 'max:100'],
+            'status' => ['required', Rule::in(config('sigap.reference.refugee_statuses', []))],
+            'location' => ['required', Rule::in(config('sigap.reference.refugee_locations', []))],
             'notes' => ['nullable', 'string', 'max:1000'],
             'registered_at' => ['nullable', 'date', 'before_or_equal:today'],
         ];
@@ -74,7 +74,8 @@ class RefugeeUpsertRequest extends FormRequest
             'name.regex' => 'Nama hanya boleh berisi huruf, spasi, titik, petik, dan tanda hubung.',
             'nationality.regex' => 'Kebangsaan hanya boleh berisi huruf, spasi, titik, petik, dan tanda hubung.',
             'unhcr_number.regex' => 'Nomor UNHCR hanya boleh berisi huruf kapital, angka, garis miring, dan tanda hubung.',
-            'status.in' => 'Status data harus Aktif, Verifikasi, atau Mutasi.',
+            'status.in' => 'Status data harus Aktif atau Perlu Verifikasi.',
+            'location.in' => 'Lokasi harus CH Puspa Agro, CH Green Bamboo, atau Pengungsi Mandiri.',
             'registered_at.before_or_equal' => 'Tanggal registrasi tidak boleh melewati hari ini.',
         ];
     }

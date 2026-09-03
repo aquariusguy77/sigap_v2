@@ -126,15 +126,15 @@ class SeedFirebase extends Command
         $samples = [
             ['internal_id' => 'RDS-24001', 'name' => 'Amina Hassan', 'nationality' => 'Somalia', 'unhcr_number' => 'UNHCR-SOM-8812', 'status' => 'Aktif', 'location' => 'CH Puspa Agro', 'document_status' => 'Lengkap', 'notes' => 'Kedua kartu sudah dikumpulkan.',
                 'placement' => ['category' => 'iom', 'community_house' => 'CH Puspa Agro']],
-            ['internal_id' => 'RDS-24008', 'name' => 'Mahmoud Kareem', 'nationality' => 'Irak', 'unhcr_number' => 'UNHCR-IRQ-4471', 'status' => 'Verifikasi', 'location' => 'CH Green Bamboo', 'document_status' => 'Perlu Verifikasi', 'notes' => 'Menunggu pemeriksaan supervisor.',
+            ['internal_id' => 'RDS-24008', 'name' => 'Mahmoud Kareem', 'nationality' => 'Irak', 'unhcr_number' => 'UNHCR-IRQ-4471', 'status' => 'Perlu Verifikasi', 'location' => 'CH Green Bamboo', 'document_status' => 'Perlu Verifikasi', 'notes' => 'Menunggu pemeriksaan supervisor.',
                 'placement' => ['category' => 'iom', 'community_house' => 'CH Green Bamboo']],
             ['internal_id' => 'RDS-24011', 'name' => 'Samira Nabil', 'nationality' => 'Afghanistan', 'unhcr_number' => 'UNHCR-AFG-2290', 'status' => 'Aktif', 'location' => 'CH Puspa Agro', 'document_status' => 'Lengkap', 'notes' => 'Kondisi stabil.',
                 'placement' => ['category' => 'iom', 'community_house' => 'CH Puspa Agro']],
-            ['internal_id' => 'RDS-24016', 'name' => 'Yousef Rahman', 'nationality' => 'Myanmar', 'unhcr_number' => 'UNHCR-MMR-6654', 'status' => 'Mutasi', 'location' => 'Wonocolo, Surabaya', 'document_status' => 'Belum Lengkap', 'notes' => 'Dalam proses perpindahan.',
+            ['internal_id' => 'RDS-24016', 'name' => 'Yousef Rahman', 'nationality' => 'Myanmar', 'unhcr_number' => 'UNHCR-MMR-6654', 'status' => 'Perlu Verifikasi', 'location' => 'Pengungsi Mandiri', 'document_status' => 'Belum Lengkap', 'notes' => 'Dalam proses perpindahan.',
                 'placement' => ['category' => 'mandiri', 'address' => 'Jalan Jemur Andayani III No. 24, RT 03 RW 05, Kelurahan Jemurwonosari, Kecamatan Wonocolo, Surabaya', 'latitude' => '-7.328912', 'longitude' => '112.734501']],
-            ['internal_id' => 'RDS-24021', 'name' => 'Layla Aziz', 'nationality' => 'Sudan', 'unhcr_number' => 'UNHCR-SDN-1180', 'status' => 'Aktif', 'location' => 'Rungkut, Surabaya', 'document_status' => 'Belum Lengkap', 'notes' => 'Kartu Wajib Lapor belum dikumpulkan.',
+            ['internal_id' => 'RDS-24021', 'name' => 'Layla Aziz', 'nationality' => 'Sudan', 'unhcr_number' => 'UNHCR-SDN-1180', 'status' => 'Aktif', 'location' => 'Pengungsi Mandiri', 'document_status' => 'Belum Lengkap', 'notes' => 'Kartu Wajib Lapor belum dikumpulkan.',
                 'placement' => ['category' => 'mandiri', 'address' => 'Jalan Rungkut Asri Tengah XI No. 7, RT 01 RW 09, Kelurahan Rungkut Kidul, Kecamatan Rungkut, Surabaya', 'latitude' => '-7.334215', 'longitude' => '112.775338']],
-            ['internal_id' => 'RDS-24027', 'name' => 'Karim Saeed', 'nationality' => 'Yaman', 'unhcr_number' => 'UNHCR-YEM-7130', 'status' => 'Verifikasi', 'location' => 'Sukolilo, Surabaya', 'document_status' => 'Perlu Verifikasi', 'notes' => 'Alamat sudah diverifikasi petugas lapangan.',
+            ['internal_id' => 'RDS-24027', 'name' => 'Karim Saeed', 'nationality' => 'Yaman', 'unhcr_number' => 'UNHCR-YEM-7130', 'status' => 'Perlu Verifikasi', 'location' => 'Pengungsi Mandiri', 'document_status' => 'Perlu Verifikasi', 'notes' => 'Alamat sudah diverifikasi petugas lapangan.',
                 'placement' => ['category' => 'mandiri', 'address' => 'Jalan Keputih Tegal Timur No. 118, RT 02 RW 04, Kelurahan Keputih, Kecamatan Sukolilo, Surabaya']],
         ];
 
@@ -158,7 +158,7 @@ class SeedFirebase extends Command
                 'refugee_name' => $refugee->name,
                 'entered_at' => now()->subDays(28 - $index * 3)->toDateString(),
                 'exited_at' => null,
-                'placement_status' => $refugee->status === 'Mutasi' ? 'Mutasi' : 'Aktif',
+                'placement_status' => 'Aktif',
                 'notes' => $placementPlans[$index]['category'] === 'mandiri'
                     ? 'Tempat tinggal dicari sendiri oleh pengungsi.'
                     : 'Ditempatkan di Community House oleh IOM.',

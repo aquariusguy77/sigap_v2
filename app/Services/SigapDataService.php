@@ -152,9 +152,15 @@ class SigapDataService
         $refugees = $this->refugees();
 
         return [
+            // Kebangsaan dibiarkan mengikuti data, karena daftarnya terbuka.
             'nationalities' => $refugees->pluck('nationality')->filter()->unique()->sort()->values(),
-            'statuses' => $refugees->pluck('status')->filter()->unique()->sort()->values(),
-            'locations' => $refugees->pluck('location')->filter()->unique()->sort()->values(),
+            /*
+             * Status dan lokasi diambil dari data acuan, bukan dari isi data.
+             * Dengan begitu pilihan pada filter tetap lengkap walaupun belum
+             * ada satu pun pengungsi yang menempati salah satu lokasi.
+             */
+            'statuses' => $this->refugeeStatusOptions(),
+            'locations' => $this->refugeeLocationOptions(),
             'documentStatuses' => collect(['Lengkap', 'Perlu Verifikasi', 'Belum Lengkap']),
         ];
     }
@@ -263,6 +269,29 @@ class SigapDataService
     public function documentTypeOptions(): Collection
     {
         return collect(config('sigap.reference.document_types', []))
+            ->filter()
+            ->values();
+    }
+
+    /**
+     * Status data pengungsi: Aktif atau Perlu Verifikasi.
+     */
+    public function refugeeStatusOptions(): Collection
+    {
+        return collect(config('sigap.reference.refugee_statuses', []))
+            ->filter()
+            ->values();
+    }
+
+    /**
+     * Lokasi hunian pada data pengungsi.
+     *
+     * Dua Community House, ditambah penanda bagi pengungsi yang mencari
+     * tempat tinggal sendiri. Alamat rincinya ada di menu Penempatan.
+     */
+    public function refugeeLocationOptions(): Collection
+    {
+        return collect(config('sigap.reference.refugee_locations', []))
             ->filter()
             ->values();
     }

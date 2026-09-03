@@ -164,9 +164,9 @@ class RefugeeController extends Controller
         $options = $this->sigapDataService->refugeeFilterOptions();
 
         return array_merge([
-            'statusOptions' => collect(['Aktif', 'Verifikasi', 'Mutasi', 'Selesai']),
+            'statusOptions' => $this->sigapDataService->refugeeStatusOptions(),
             'nationalityOptions' => $options['nationalities'],
-            'locationOptions' => $options['locations'],
+            'locationOptions' => $this->sigapDataService->refugeeLocationOptions(),
             'documentStatusOptions' => $options['documentStatuses'],
         ], $overrides);
     }
