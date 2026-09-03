@@ -36,6 +36,26 @@
                     </div>
                 @endif
 
+                {{--
+                    Kegagalan unggah berkas dilaporkan terpisah dari galat
+                    validasi, karena data induknya sudah tersimpan dan yang
+                    perlu diulang hanya berkasnya.
+                --}}
+                @if (! empty(session('uploadErrors')))
+                    <div class="flash alert-error" role="alert">
+                        <x-icon name="alert" class="chip-icon" />
+                        <div>
+                            <strong>Berkas berikut gagal diunggah</strong>
+                            <ul>
+                                @foreach (session('uploadErrors') as $uploadError)
+                                    <li>{{ $uploadError }}</li>
+                                @endforeach
+                            </ul>
+                            <p>Data lainnya sudah tersimpan. Ulangi unggahnya lewat menu Dokumen.</p>
+                        </div>
+                    </div>
+                @endif
+
                 @if ($errors->any())
                     <div class="flash alert-error" role="alert">
                         <x-icon name="alert" class="chip-icon" />

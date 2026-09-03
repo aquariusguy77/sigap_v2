@@ -214,10 +214,15 @@ class DocumentController extends Controller
         if ($file instanceof UploadedFile) {
             $stored = $this->firebaseStorage->storeDocument($file, (string) ($payload['document_type'] ?? 'dokumen'));
 
+            /*
+             * Lokasi berkas dan kode referensinya tidak lagi diketik petugas.
+             * Keduanya ditentukan sendiri oleh lapisan penyimpanan, jadi cukup
+             * disalin dari hasil unggahan.
+             */
             $payload['file_name'] = $file->getClientOriginalName();
             $payload['file_path'] = $stored['path'];
             $payload['download_url'] = $stored['download_url'] ?? null;
-            $payload['drive_file_id'] = $payload['drive_file_id'] ?: $stored['firebase_document_key'];
+            $payload['drive_file_id'] = $stored['firebase_document_key'];
             $payload['storage_key'] = $stored['storage_key'] ?? null;
 
             // Berkas lama tidak lagi dirujuk siapa pun, jadi tidak perlu disimpan.
@@ -225,10 +230,11 @@ class DocumentController extends Controller
                 $this->firebaseStorage->forgetFromRealtimeDatabase($existing->storage_key);
             }
         } elseif ($existing !== null) {
+            // Tanpa berkas baru, keterangan berkas yang lama dipertahankan.
             $payload['file_name'] = $payload['file_name'] ?: $existing->file_name;
-            $payload['file_path'] = $payload['file_path'] ?: $existing->file_path;
+            $payload['file_path'] = $existing->file_path;
             $payload['download_url'] = $existing->download_url;
-            $payload['drive_file_id'] = $payload['drive_file_id'] ?: $existing->drive_file_id;
+            $payload['drive_file_id'] = $existing->drive_file_id;
             $payload['storage_key'] = $existing->storage_key;
         }
 

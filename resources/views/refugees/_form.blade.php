@@ -4,7 +4,7 @@
     $selectedLocation = old('location', $refugee->location ?? '');
 @endphp
 
-<form method="POST" action="{{ $formAction }}">
+<form method="POST" action="{{ $formAction }}" enctype="multipart/form-data">
     @csrf
     @if ($formMethod !== 'POST')
         @method($formMethod)

@@ -51,16 +51,6 @@
                 @error('uploaded_file')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Lokasi Berkas</label>
-                <input class="control" type="text" name="file_path" value="{{ old('file_path', $document->file_path ?? '') }}">
-                @error('file_path')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
-            </div>
-            <div>
-                <label class="table-meta">Kode Referensi Berkas</label>
-                <input class="control" type="text" name="drive_file_id" value="{{ old('drive_file_id', $document->drive_file_id ?? '') }}">
-                @error('drive_file_id')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
-            </div>
-            <div>
                 <label class="table-meta">Status Verifikasi</label>
                 <select class="control" name="verification_status" required>
                     <option value="">Pilih status</option>
@@ -85,7 +75,8 @@
             <h4>Panduan singkat</h4>
             <ul>
                 <li>Format yang diterima: PDF, JPG, atau PNG.</li>
-                <li>Nama dan lokasi berkas terisi otomatis setelah file diunggah.</li>
+                <li>Nama berkas terisi otomatis setelah file diunggah, jadi tidak perlu diketik.</li>
+                <li>Tanpa mengunggah file baru, berkas yang sudah tersimpan tetap dipertahankan.</li>
                 <li>Kode referensi boleh dikosongkan; sistem akan membuatkannya.</li>
             </ul>
         </div>

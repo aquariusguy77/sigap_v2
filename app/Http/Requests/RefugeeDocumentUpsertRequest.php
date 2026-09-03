@@ -18,9 +18,18 @@ class RefugeeDocumentUpsertRequest extends FormRequest
             'refugee_id' => ['required', 'string', 'max:120'],
             // Hanya dua berkas yang wajib dikumpulkan pengungsi.
             'document_type' => ['required', 'string', Rule::in(config('sigap.reference.document_types', []))],
-            'file_name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9._\-]+$/'],
-            'file_path' => ['nullable', 'string', 'max:255'],
-            'drive_file_id' => ['nullable', 'string', 'max:255'],
+            /*
+             * Wajib hanya bila petugas tidak mengunggah berkas. Saat ada
+             * berkas yang diunggah, namanya diambil dari berkas itu sendiri,
+             * sehingga mengetik ulang cuma pekerjaan sia-sia.
+             */
+            'file_name' => [
+                Rule::requiredIf(fn () => ! $this->hasFile('uploaded_file')),
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^[A-Za-z0-9._\-]+$/',
+            ],
             'verification_status' => ['required', Rule::in(['Lengkap', 'Perlu Verifikasi', 'Belum Lengkap'])],
             'uploaded_at' => ['required', 'date', 'before_or_equal:today'],
             'uploaded_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
@@ -32,8 +41,6 @@ class RefugeeDocumentUpsertRequest extends FormRequest
     {
         $this->merge([
             'file_name' => trim((string) $this->input('file_name')),
-            'file_path' => trim((string) $this->input('file_path')),
-            'drive_file_id' => trim((string) $this->input('drive_file_id')),
             'notes' => trim((string) $this->input('notes')),
         ]);
     }
@@ -41,6 +48,7 @@ class RefugeeDocumentUpsertRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'file_name.required' => 'Isi nama berkas, atau pilih berkas yang akan diunggah.',
             'file_name.regex' => 'Nama file hanya boleh berisi huruf, angka, titik, garis bawah, dan tanda hubung.',
             'document_type.in' => 'Jenis dokumen hanya Kartu Pengungsi atau Kartu Wajib Lapor.',
             'verification_status.in' => 'Status verifikasi harus Lengkap, Perlu Verifikasi, atau Belum Lengkap.',
@@ -57,8 +65,6 @@ class RefugeeDocumentUpsertRequest extends FormRequest
             'refugee_id' => (string) $this->input('refugee_id'),
             'document_type' => (string) $this->input('document_type'),
             'file_name' => (string) $this->input('file_name'),
-            'file_path' => $this->input('file_path'),
-            'drive_file_id' => $this->input('drive_file_id'),
             'verification_status' => (string) $this->input('verification_status'),
             'uploaded_at' => $this->input('uploaded_at'),
             'notes' => $this->input('notes'),

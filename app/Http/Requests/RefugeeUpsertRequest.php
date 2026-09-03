@@ -24,6 +24,16 @@ class RefugeeUpsertRequest extends FormRequest
             'unhcr_number' => ['nullable', 'string', 'max:100', 'regex:/^[A-Z0-9\-\/]+$/'],
             'status' => ['required', Rule::in(config('sigap.reference.refugee_statuses', []))],
             'location' => ['required', Rule::in(config('sigap.reference.refugee_locations', []))],
+
+            /*
+             * Berkas yang boleh diunggah sekalian dari formulir ini, satu
+             * kolom untuk tiap jenis dokumen. Semuanya opsional: petugas boleh
+             * menyimpan datanya dulu lalu mengunggah berkasnya belakangan
+             * lewat menu Dokumen.
+             */
+            'documents' => ['nullable', 'array', 'max:10'],
+            'documents.*.type' => ['nullable', Rule::in(config('sigap.reference.document_types', []))],
+            'documents.*.file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'registered_at' => ['nullable', 'date', 'before_or_equal:today'],
         ];
@@ -75,6 +85,8 @@ class RefugeeUpsertRequest extends FormRequest
             'nationality.regex' => 'Kebangsaan hanya boleh berisi huruf, spasi, titik, petik, dan tanda hubung.',
             'unhcr_number.regex' => 'Nomor UNHCR hanya boleh berisi huruf kapital, angka, garis miring, dan tanda hubung.',
             'status.in' => 'Status data harus Aktif atau Perlu Verifikasi.',
+            'documents.*.file.mimes' => 'Berkas dokumen harus berupa PDF, JPG, JPEG, atau PNG.',
+            'documents.*.file.max' => 'Ukuran tiap berkas dokumen maksimal 5 MB.',
             'location.in' => 'Lokasi harus CH Puspa Agro, CH Green Bamboo, atau Pengungsi Mandiri.',
             'registered_at.before_or_equal' => 'Tanggal registrasi tidak boleh melewati hari ini.',
         ];

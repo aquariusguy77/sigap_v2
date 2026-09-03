@@ -2,22 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\DocumentUploadException;
 use App\Exceptions\FirebaseWriteException;
 use App\Firebase\AuditTrailRepository;
+use App\Firebase\DocumentRepository;
 use App\Firebase\Record;
 use App\Firebase\RefugeeRepository;
 use App\Http\Requests\RefugeeFilterRequest;
 use App\Http\Requests\RefugeeUpsertRequest;
+use App\Services\FirebaseStorageService;
 use App\Services\SigapDataService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\View\View;
+use Throwable;
 
 class RefugeeController extends Controller
 {
     public function __construct(
         protected SigapDataService $sigapDataService,
         protected RefugeeRepository $refugees,
-        protected AuditTrailRepository $audits
+        protected AuditTrailRepository $audits,
+        protected DocumentRepository $documents,
+        protected FirebaseStorageService $firebaseStorage
     ) {
     }
 
@@ -80,9 +87,72 @@ class RefugeeController extends Controller
             'reason' => 'Input data baru',
         ]);
 
+        $upload = $this->storeAttachedDocuments($refugee, $request);
+
         return redirect()
             ->route('refugees.index')
-            ->with('status', 'Data pengungsi berhasil ditambahkan.');
+            ->with('status', 'Data pengungsi berhasil ditambahkan.' . $upload['summary'])
+            ->with('uploadErrors', $upload['errors']);
+    }
+
+    /**
+     * Menyimpan berkas yang ikut diunggah dari formulir data pengungsi.
+     *
+     * Data pengungsinya sudah tersimpan sebelum metode ini dipanggil, jadi
+     * kegagalan satu berkas tidak boleh membatalkan apa pun. Yang gagal
+     * dilaporkan apa adanya agar petugas tahu mana yang perlu diulang lewat
+     * menu Dokumen, alih-alih mengira semuanya sudah masuk.
+     *
+     * @return array{summary:string, errors:array<int, string>}
+     */
+    protected function storeAttachedDocuments(Record $refugee, RefugeeUpsertRequest $request): array
+    {
+        $tersimpan = 0;
+        $errors = [];
+
+        foreach ((array) $request->input('documents', []) as $index => $entry) {
+            $file = $request->file("documents.{$index}.file");
+
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
+
+            $type = (string) ($entry['type'] ?? 'Dokumen');
+
+            try {
+                $stored = $this->firebaseStorage->storeDocument($file, $type);
+
+                $this->documents->create([
+                    'refugee_id' => $refugee->id,
+                    'refugee_name' => $refugee->name,
+                    'document_type' => $type,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $stored['path'],
+                    'download_url' => $stored['download_url'] ?? null,
+                    'drive_file_id' => $stored['firebase_document_key'],
+                    'storage_key' => $stored['storage_key'] ?? null,
+                    'verification_status' => 'Perlu Verifikasi',
+                    'uploaded_at' => now()->toIso8601String(),
+                    'uploaded_by' => $this->currentActorName(),
+                    'notes' => 'Diunggah bersamaan dengan pendaftaran data pengungsi.',
+                ]);
+
+                $tersimpan++;
+            } catch (DocumentUploadException | FirebaseWriteException $e) {
+                $errors[] = $type . ': ' . $e->getMessage();
+            } catch (Throwable $e) {
+                $errors[] = $type . ': berkas gagal disimpan.';
+            }
+        }
+
+        $summary = match (true) {
+            $tersimpan > 0 && $errors === [] => ' ' . $tersimpan . ' berkas dokumen ikut terunggah.',
+            $tersimpan > 0 => ' ' . $tersimpan . ' berkas terunggah, sebagian gagal.',
+            $errors !== [] => ' Namun berkas dokumennya gagal diunggah.',
+            default => '',
+        };
+
+        return ['summary' => $summary, 'errors' => $errors];
     }
 
     public function edit(string $refugee): View
@@ -120,9 +190,12 @@ class RefugeeController extends Controller
             'reason' => 'Pembaruan data operasional',
         ]);
 
+        $upload = $this->storeAttachedDocuments($updated, $request);
+
         return redirect()
             ->route('refugees.index')
-            ->with('status', 'Data pengungsi berhasil diperbarui.');
+            ->with('status', 'Data pengungsi berhasil diperbarui.' . $upload['summary'])
+            ->with('uploadErrors', $upload['errors']);
     }
 
     public function destroy(string $refugee): RedirectResponse
@@ -168,6 +241,7 @@ class RefugeeController extends Controller
             'nationalityOptions' => $options['nationalities'],
             'locationOptions' => $this->sigapDataService->refugeeLocationOptions(),
             'documentStatusOptions' => $options['documentStatuses'],
+            'documentTypeOptions' => $this->sigapDataService->documentTypeOptions(),
         ], $overrides);
     }
 }
