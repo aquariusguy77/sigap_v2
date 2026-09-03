@@ -213,7 +213,9 @@ class SigapDataService
 
     public function placementStatusOptions(): Collection
     {
-        return collect(['Aktif', 'Mutasi', 'Selesai', 'Transit']);
+        return collect(config('sigap.reference.placement_statuses', []))
+            ->filter()
+            ->values();
     }
 
     // ------------------------------------------------------------------

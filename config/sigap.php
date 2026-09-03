@@ -76,6 +76,16 @@ return [
         ],
 
         /*
+         * Status penempatan, memakai dua nilai yang sama dengan status data
+         * pengungsi supaya petugas tidak perlu menghafal dua istilah berbeda
+         * untuk maksud yang sama.
+         */
+        'placement_statuses' => [
+            'Aktif',
+            'Perlu Verifikasi',
+        ],
+
+        /*
          * Lokasi hunian pada data pengungsi.
          *
          * Dua Community House disebut namanya, sedangkan pengungsi yang

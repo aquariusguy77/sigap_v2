@@ -158,7 +158,8 @@ class SeedFirebase extends Command
                 'refugee_name' => $refugee->name,
                 'entered_at' => now()->subDays(28 - $index * 3)->toDateString(),
                 'exited_at' => null,
-                'placement_status' => 'Aktif',
+                // Ikut status pengungsinya agar kedua nilai sama-sama terlihat.
+                'placement_status' => $refugee->status === 'Perlu Verifikasi' ? 'Perlu Verifikasi' : 'Aktif',
                 'notes' => $placementPlans[$index]['category'] === 'mandiri'
                     ? 'Tempat tinggal dicari sendiri oleh pengungsi.'
                     : 'Ditempatkan di Community House oleh IOM.',

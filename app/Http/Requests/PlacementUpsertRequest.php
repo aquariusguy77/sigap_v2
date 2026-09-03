@@ -50,7 +50,7 @@ class PlacementUpsertRequest extends FormRequest
 
             'entered_at' => ['required', 'date', 'before_or_equal:today'],
             'exited_at' => ['nullable', 'date', 'after_or_equal:entered_at'],
-            'placement_status' => ['required', Rule::in(['Aktif', 'Mutasi', 'Selesai', 'Transit'])],
+            'placement_status' => ['required', Rule::in(config('sigap.reference.placement_statuses', []))],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -153,7 +153,7 @@ class PlacementUpsertRequest extends FormRequest
             'entered_at.required' => 'Tanggal masuk wajib diisi.',
             'entered_at.before_or_equal' => 'Tanggal masuk tidak boleh melewati hari ini.',
             'exited_at.after_or_equal' => 'Tanggal keluar harus sama atau setelah tanggal masuk.',
-            'placement_status.in' => 'Status penempatan harus Aktif, Mutasi, Selesai, atau Transit.',
+            'placement_status.in' => 'Status penempatan harus Aktif atau Perlu Verifikasi.',
         ];
     }
 

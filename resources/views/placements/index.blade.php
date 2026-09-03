@@ -2,8 +2,8 @@
 
 @php
     $badgeClass = fn (string $value) => match ($value) {
-        'Aktif', 'Selesai' => 'success',
-        'Verifikasi', 'Transit' => 'warn',
+        'Aktif' => 'success',
+        'Perlu Verifikasi' => 'warn',
         default => 'danger',
     };
 @endphp
