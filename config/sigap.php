@@ -23,6 +23,50 @@ return [
         'firebase_read_enabled' => (bool) env('SIGAP_FIREBASE_READ_ENABLED', true),
     ],
 
+    /*
+     * Data acuan operasional Rudenim Surabaya.
+     *
+     * Dikumpulkan di satu tempat agar dapat disesuaikan tanpa menyentuh kode
+     * controller maupun tampilan.
+     */
+    'reference' => [
+
+        /*
+         * Berkas yang wajib dikumpulkan setiap pengungsi. Hanya dua, sesuai
+         * ketentuan yang berlaku di Rudenim Surabaya.
+         */
+        'document_types' => [
+            'Kartu Pengungsi',
+            'Kartu Wajib Lapor',
+        ],
+
+        /*
+         * Penempatan terbagi dua.
+         *
+         *  iom      Pengungsi yang memperoleh fasilitas dari IOM. Seluruhnya
+         *           terpusat di Community House, jadi lokasinya cukup dipilih
+         *           dari daftar.
+         *  mandiri  Pengungsi yang mencari tempat tinggal sendiri. Alamatnya
+         *           berbeda-beda dan perlu dicatat lengkap agar petugas dapat
+         *           menemukannya saat pengawasan lapangan.
+         */
+        'placement_categories' => [
+            'iom' => [
+                'label' => 'Fasilitas IOM',
+                'description' => 'Ditempatkan di Community House yang disediakan IOM.',
+            ],
+            'mandiri' => [
+                'label' => 'Mandiri',
+                'description' => 'Mencari dan membiayai tempat tinggal sendiri.',
+            ],
+        ],
+
+        'community_houses' => [
+            'CH Puspa Agro',
+            'CH Green Bamboo',
+        ],
+    ],
+
     'firebase' => [
         'database_url' => env('FIREBASE_DATABASE_URL', 'https://ralf-803d6-default-rtdb.asia-southeast1.firebasedatabase.app/'),
         'project_id' => 'ralf-803d6',

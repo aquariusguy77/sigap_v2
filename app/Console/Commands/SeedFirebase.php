@@ -118,18 +118,34 @@ class SeedFirebase extends Command
         $this->newLine();
         $this->line('Membuat data contoh (seluruhnya data sintetis):');
 
+        /*
+         * Tiga pengungsi berfasilitas IOM dan tiga mandiri, supaya kedua
+         * kategori penempatan langsung terlihat begitu aplikasi dibuka.
+         * Alamat dan koordinat di bawah ini sepenuhnya sintetis.
+         */
         $samples = [
-            ['internal_id' => 'RDS-24001', 'name' => 'Amina Hassan', 'nationality' => 'Somalia', 'unhcr_number' => 'UNHCR-SOM-8812', 'status' => 'Aktif', 'location' => 'Hunian A-03', 'document_status' => 'Lengkap', 'notes' => 'Dokumen keluarga lengkap.'],
-            ['internal_id' => 'RDS-24008', 'name' => 'Mahmoud Kareem', 'nationality' => 'Irak', 'unhcr_number' => 'UNHCR-IRQ-4471', 'status' => 'Verifikasi', 'location' => 'Hunian B-02', 'document_status' => 'Perlu Verifikasi', 'notes' => 'Menunggu pemeriksaan supervisor.'],
-            ['internal_id' => 'RDS-24011', 'name' => 'Samira Nabil', 'nationality' => 'Afghanistan', 'unhcr_number' => 'UNHCR-AFG-2290', 'status' => 'Aktif', 'location' => 'Hunian C-05', 'document_status' => 'Lengkap', 'notes' => 'Kondisi stabil.'],
-            ['internal_id' => 'RDS-24016', 'name' => 'Yousef Rahman', 'nationality' => 'Myanmar', 'unhcr_number' => 'UNHCR-MMR-6654', 'status' => 'Mutasi', 'location' => 'Transit 1', 'document_status' => 'Belum Lengkap', 'notes' => 'Dalam proses perpindahan.'],
-            ['internal_id' => 'RDS-24021', 'name' => 'Layla Aziz', 'nationality' => 'Sudan', 'unhcr_number' => 'UNHCR-SDN-1180', 'status' => 'Aktif', 'location' => 'Hunian A-01', 'document_status' => 'Belum Lengkap', 'notes' => 'Berkas identitas belum lengkap.'],
-            ['internal_id' => 'RDS-24027', 'name' => 'Karim Saeed', 'nationality' => 'Yaman', 'unhcr_number' => 'UNHCR-YEM-7130', 'status' => 'Verifikasi', 'location' => 'Hunian D-02', 'document_status' => 'Perlu Verifikasi', 'notes' => 'Perlu surat pendukung tambahan.'],
+            ['internal_id' => 'RDS-24001', 'name' => 'Amina Hassan', 'nationality' => 'Somalia', 'unhcr_number' => 'UNHCR-SOM-8812', 'status' => 'Aktif', 'location' => 'CH Puspa Agro', 'document_status' => 'Lengkap', 'notes' => 'Kedua kartu sudah dikumpulkan.',
+                'placement' => ['category' => 'iom', 'community_house' => 'CH Puspa Agro']],
+            ['internal_id' => 'RDS-24008', 'name' => 'Mahmoud Kareem', 'nationality' => 'Irak', 'unhcr_number' => 'UNHCR-IRQ-4471', 'status' => 'Verifikasi', 'location' => 'CH Green Bamboo', 'document_status' => 'Perlu Verifikasi', 'notes' => 'Menunggu pemeriksaan supervisor.',
+                'placement' => ['category' => 'iom', 'community_house' => 'CH Green Bamboo']],
+            ['internal_id' => 'RDS-24011', 'name' => 'Samira Nabil', 'nationality' => 'Afghanistan', 'unhcr_number' => 'UNHCR-AFG-2290', 'status' => 'Aktif', 'location' => 'CH Puspa Agro', 'document_status' => 'Lengkap', 'notes' => 'Kondisi stabil.',
+                'placement' => ['category' => 'iom', 'community_house' => 'CH Puspa Agro']],
+            ['internal_id' => 'RDS-24016', 'name' => 'Yousef Rahman', 'nationality' => 'Myanmar', 'unhcr_number' => 'UNHCR-MMR-6654', 'status' => 'Mutasi', 'location' => 'Wonocolo, Surabaya', 'document_status' => 'Belum Lengkap', 'notes' => 'Dalam proses perpindahan.',
+                'placement' => ['category' => 'mandiri', 'address' => 'Jalan Jemur Andayani III No. 24, RT 03 RW 05, Kelurahan Jemurwonosari, Kecamatan Wonocolo, Surabaya', 'latitude' => '-7.328912', 'longitude' => '112.734501']],
+            ['internal_id' => 'RDS-24021', 'name' => 'Layla Aziz', 'nationality' => 'Sudan', 'unhcr_number' => 'UNHCR-SDN-1180', 'status' => 'Aktif', 'location' => 'Rungkut, Surabaya', 'document_status' => 'Belum Lengkap', 'notes' => 'Kartu Wajib Lapor belum dikumpulkan.',
+                'placement' => ['category' => 'mandiri', 'address' => 'Jalan Rungkut Asri Tengah XI No. 7, RT 01 RW 09, Kelurahan Rungkut Kidul, Kecamatan Rungkut, Surabaya', 'latitude' => '-7.334215', 'longitude' => '112.775338']],
+            ['internal_id' => 'RDS-24027', 'name' => 'Karim Saeed', 'nationality' => 'Yaman', 'unhcr_number' => 'UNHCR-YEM-7130', 'status' => 'Verifikasi', 'location' => 'Sukolilo, Surabaya', 'document_status' => 'Perlu Verifikasi', 'notes' => 'Alamat sudah diverifikasi petugas lapangan.',
+                'placement' => ['category' => 'mandiri', 'address' => 'Jalan Keputih Tegal Timur No. 118, RT 02 RW 04, Kelurahan Keputih, Kecamatan Sukolilo, Surabaya']],
         ];
 
         $created = [];
 
+        $placementPlans = [];
+
         foreach ($samples as $index => $sample) {
+            $placementPlans[] = $sample['placement'];
+            unset($sample['placement']);
+
             $sample['registered_at'] = now()->subDays(30 - $index * 3)->toIso8601String();
             $record = $refugees->create($sample);
             $created[] = $record;
@@ -137,20 +153,22 @@ class SeedFirebase extends Command
         }
 
         foreach ($created as $index => $refugee) {
-            $placements->create([
+            $placements->create(array_merge($placementPlans[$index], [
                 'refugee_id' => $refugee->id,
                 'refugee_name' => $refugee->name,
-                'location_name' => $refugee->location,
                 'entered_at' => now()->subDays(28 - $index * 3)->toDateString(),
                 'exited_at' => null,
                 'placement_status' => $refugee->status === 'Mutasi' ? 'Mutasi' : 'Aktif',
-                'notes' => 'Pencatatan awal penempatan.',
-            ]);
+                'notes' => $placementPlans[$index]['category'] === 'mandiri'
+                    ? 'Tempat tinggal dicari sendiri oleh pengungsi.'
+                    : 'Ditempatkan di Community House oleh IOM.',
+            ]));
         }
 
         $this->line('  penempatan  ' . count($created) . ' catatan');
 
-        $types = ['Identitas Utama', 'Administrasi Internal', 'Riwayat Penempatan', 'Lampiran Tambahan'];
+        // Hanya dua berkas yang wajib dikumpulkan pengungsi.
+        $types = config('sigap.reference.document_types', ['Kartu Pengungsi', 'Kartu Wajib Lapor']);
 
         foreach ($created as $index => $refugee) {
             $documents->create([

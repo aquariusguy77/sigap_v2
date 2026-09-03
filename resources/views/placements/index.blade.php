@@ -62,6 +62,7 @@
                 <thead>
                     <tr>
                         <th>Pengungsi</th>
+                        <th>Kategori</th>
                         <th>Lokasi</th>
                         <th>Masuk</th>
                         <th>Keluar</th>
@@ -79,6 +80,11 @@
                                     <span class="cell-title">{{ $placement['title'] }}</span>
                                 @endif
                             </td>
+                            <td>
+                                <span class="badge {{ !empty($placement['is_mandiri']) ? '' : 'success' }}">
+                                    {{ $placement['category_label'] ?? '-' }}
+                                </span>
+                            </td>
                             <td>{{ $placement['location_name'] ?? '-' }}</td>
                             <td class="table-meta">{{ $placement['entered_at'] ?? '-' }}</td>
                             <td class="table-meta">{{ $placement['exited_at'] ?? '—' }}</td>
@@ -90,6 +96,12 @@
                             <td>
                                 @if (!empty($placement['id']))
                                     <div class="row-actions" style="justify-content:flex-end;">
+                                        @if (!empty($placement['directions_url']))
+                                            <a class="btn-icon" href="{{ $placement['directions_url'] }}" target="_blank" rel="noopener"
+                                               title="Petunjuk arah ke rumah pengungsi">
+                                                <x-icon name="location" />
+                                            </a>
+                                        @endif
                                         <a class="btn-icon" href="{{ route('placements.show', $placement['id']) }}" title="Lihat detail">
                                             <x-icon name="eye" />
                                         </a>
@@ -113,7 +125,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="empty-row">Belum ada penempatan yang cocok.</td></tr>
+                        <tr><td colspan="7" class="empty-row">Belum ada penempatan yang cocok.</td></tr>
                     @endforelse
                 </tbody>
             </table>

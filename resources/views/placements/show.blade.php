@@ -33,6 +33,34 @@
         </div>
     </section>
 
+    @if (!empty($placementView['has_map']))
+        <section class="panel" style="margin-top:14px;">
+            <div class="section-head">
+                <div>
+                    <span class="section-tag"><x-icon name="location" class="chip-icon" />Pengawasan Lapangan</span>
+                    <h3>Menuju tempat tinggal pengungsi</h3>
+                    <p class="section-intro">
+                        Pengungsi mandiri tinggal menyebar, tidak terpusat seperti di Community House.
+                        Buka petunjuk arah di bawah ini langsung dari ponsel saat hendak berangkat.
+                    </p>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <a class="btn btn-primary" href="{{ $placementView['directions_url'] }}" target="_blank" rel="noopener">
+                    <x-icon name="location" class="chip-icon" /> Petunjuk Arah
+                </a>
+                <a class="btn btn-ghost" href="{{ $placementView['map_url'] }}" target="_blank" rel="noopener">
+                    <x-icon name="search" class="chip-icon" /> Lihat di Peta
+                </a>
+            </div>
+            @if (blank($placementView['latitude'] ?? null))
+                <p class="table-meta" style="margin-top:12px;">
+                    Titik peta masih dicari berdasarkan alamat. Agar tepat sasaran, lengkapi lintang dan bujur lewat menu Ubah Penempatan.
+                </p>
+            @endif
+        </section>
+    @endif
+
     <section class="double-grid">
         <div class="panel">
             <div class="section-head">
@@ -55,7 +83,21 @@
                 </div>
             </div>
             <div class="list-group">
-                <article class="list-item"><strong>Lokasi</strong><p>{{ $placementView['location_name'] ?? '-' }}</p></article>
+                <article class="list-item"><strong>Kategori</strong><p>{{ $placementView['category_label'] ?? '-' }}</p></article>
+                @if (!empty($placementView['is_mandiri']))
+                    <article class="list-item">
+                        <strong>Alamat Tempat Tinggal</strong>
+                        <p>{{ $placementView['address'] ?: 'Belum dicatat.' }}</p>
+                    </article>
+                    @if (filled($placementView['latitude'] ?? null) && filled($placementView['longitude'] ?? null))
+                        <article class="list-item">
+                            <strong>Koordinat</strong>
+                            <p>{{ $placementView['latitude'] }}, {{ $placementView['longitude'] }}</p>
+                        </article>
+                    @endif
+                @else
+                    <article class="list-item"><strong>Community House</strong><p>{{ $placementView['community_house'] ?: '-' }}</p></article>
+                @endif
                 <article class="list-item"><strong>Status Penempatan</strong><p>{{ $placementView['placement_status'] ?? '-' }}</p></article>
                 <article class="list-item"><strong>Catatan</strong><p>{{ $placementView['notes'] ?? 'Belum ada catatan.' }}</p></article>
             </div>

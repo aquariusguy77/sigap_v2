@@ -16,7 +16,8 @@ class RefugeeDocumentUpsertRequest extends FormRequest
     {
         return [
             'refugee_id' => ['required', 'string', 'max:120'],
-            'document_type' => ['required', 'string', 'max:100'],
+            // Hanya dua berkas yang wajib dikumpulkan pengungsi.
+            'document_type' => ['required', 'string', Rule::in(config('sigap.reference.document_types', []))],
             'file_name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9._\-]+$/'],
             'file_path' => ['nullable', 'string', 'max:255'],
             'drive_file_id' => ['nullable', 'string', 'max:255'],
@@ -41,6 +42,7 @@ class RefugeeDocumentUpsertRequest extends FormRequest
     {
         return [
             'file_name.regex' => 'Nama file hanya boleh berisi huruf, angka, titik, garis bawah, dan tanda hubung.',
+            'document_type.in' => 'Jenis dokumen hanya Kartu Pengungsi atau Kartu Wajib Lapor.',
             'verification_status.in' => 'Status verifikasi harus Lengkap, Perlu Verifikasi, atau Belum Lengkap.',
             'uploaded_at.required' => 'Tanggal unggah wajib diisi.',
             'uploaded_at.before_or_equal' => 'Tanggal unggah tidak boleh melewati hari ini.',

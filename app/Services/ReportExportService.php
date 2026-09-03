@@ -30,7 +30,7 @@ class ReportExportService
             ],
             'penempatan' => [
                 'name' => 'Laporan Penempatan',
-                'note' => 'Lokasi hunian, tanggal masuk dan keluar, serta status penempatan.',
+                'note' => 'Kategori penempatan, Community House atau alamat mandiri, tanggal, dan status.',
                 'icon' => 'location',
             ],
             'riwayat' => [
@@ -73,7 +73,7 @@ class ReportExportService
     {
         return match ($key) {
             'dokumen' => ['Jenis Dokumen', 'Pengungsi', 'Nama Berkas', 'Status Verifikasi', 'Tanggal Unggah'],
-            'penempatan' => ['Pengungsi', 'Lokasi', 'Masuk', 'Keluar', 'Status'],
+            'penempatan' => ['Pengungsi', 'Kategori', 'Lokasi / Alamat', 'Masuk', 'Keluar', 'Status'],
             'riwayat' => ['Aktivitas', 'Rincian Perubahan', 'Pelaksana', 'Waktu'],
             'prioritas' => ['ID Internal', 'Nama', 'Kebangsaan', 'Lokasi', 'Kelengkapan Dokumen'],
             default => ['ID Internal', 'Nama', 'Kebangsaan', 'Nomor UNHCR', 'Status', 'Lokasi', 'Kelengkapan Dokumen'],
@@ -119,7 +119,9 @@ class ReportExportService
     {
         return $this->data->placements()->map(fn (Record $item) => [
             $item->refugee_name ?: '-',
-            $item->location_name ?: '-',
+            $item->category_label ?: '-',
+            // Community House bagi yang difasilitasi IOM, alamat bagi yang mandiri.
+            $item->is_mandiri ? ($item->address ?: '-') : ($item->community_house ?: '-'),
             $this->date($item->entered_at),
             $this->date($item->exited_at),
             $item->placement_status ?: '-',

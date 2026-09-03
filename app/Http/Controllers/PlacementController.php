@@ -36,6 +36,7 @@ class PlacementController extends Controller
             'placements' => $this->sigapDataService->paginatedFilteredPlacements($filters),
             'activeFilters' => $filters,
             'statusOptions' => $this->sigapDataService->placementStatusOptions(),
+            'categoryOptions' => $this->sigapDataService->placementCategoryOptions(),
         ]));
     }
 
@@ -51,6 +52,8 @@ class PlacementController extends Controller
             'formMethod' => 'POST',
             'refugees' => $this->sigapDataService->refugeeSelectOptions(),
             'statusOptions' => $this->sigapDataService->placementStatusOptions(),
+            'categoryOptions' => $this->sigapDataService->placementCategoryOptions(),
+            'communityHouses' => $this->sigapDataService->communityHouseOptions(),
         ]));
     }
 
@@ -75,7 +78,7 @@ class PlacementController extends Controller
         try {
             $placement = $this->placements->create($payload);
         } catch (FirebaseWriteException $e) {
-            return back()->withInput()->withErrors(['location_name' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['category' => $e->getMessage()]);
         }
 
         $this->audits->record([
@@ -104,6 +107,8 @@ class PlacementController extends Controller
             'formMethod' => 'PUT',
             'refugees' => $this->sigapDataService->refugeeSelectOptions(),
             'statusOptions' => $this->sigapDataService->placementStatusOptions(),
+            'categoryOptions' => $this->sigapDataService->placementCategoryOptions(),
+            'communityHouses' => $this->sigapDataService->communityHouseOptions(),
         ]));
     }
 
@@ -116,7 +121,7 @@ class PlacementController extends Controller
         try {
             $updated = $this->placements->update($placement, $payload);
         } catch (FirebaseWriteException $e) {
-            return back()->withInput()->withErrors(['location_name' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['category' => $e->getMessage()]);
         }
 
         $this->audits->record([

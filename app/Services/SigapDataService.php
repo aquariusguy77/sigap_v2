@@ -255,14 +255,34 @@ class SigapDataService
         return collect(['Lengkap', 'Perlu Verifikasi', 'Belum Lengkap']);
     }
 
+    /**
+     * Berkas yang wajib dikumpulkan pengungsi.
+     *
+     * Hanya dua jenis: Kartu Pengungsi dan Kartu Wajib Lapor.
+     */
     public function documentTypeOptions(): Collection
     {
-        return collect([
-            'Identitas Utama',
-            'Administrasi Internal',
-            'Riwayat Penempatan',
-            'Lampiran Tambahan',
-        ]);
+        return collect(config('sigap.reference.document_types', []))
+            ->filter()
+            ->values();
+    }
+
+    /**
+     * Kategori penempatan beserta keterangannya, dikunci "iom" dan "mandiri".
+     */
+    public function placementCategoryOptions(): Collection
+    {
+        return collect(config('sigap.reference.placement_categories', []));
+    }
+
+    /**
+     * Daftar Community House tempat pengungsi berfasilitas IOM ditempatkan.
+     */
+    public function communityHouseOptions(): Collection
+    {
+        return collect(config('sigap.reference.community_houses', []))
+            ->filter()
+            ->values();
     }
 
     // ------------------------------------------------------------------
