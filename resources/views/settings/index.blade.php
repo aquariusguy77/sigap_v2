@@ -1,59 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-    <section class="panel section-anchor" id="pengaturan">
+    <section class="panel section-anchor" id="hak-akses">
         <div class="section-head">
             <div>
-                <span class="section-tag"><x-icon name="settings" class="chip-icon" />Pengaturan</span>
-                <h3>Konfigurasi sistem dan hak akses</h3>
-                <p class="section-intro">Pengelolaan akun, keamanan, dan referensi data hanya dapat diakses oleh Admin.</p>
+                <span class="section-tag"><x-icon name="shield" class="chip-icon" />Hak Akses</span>
+                <h3>Akun dan kewenangan</h3>
+                <p class="section-intro">
+                    Halaman ini hanya menampilkan keadaan sistem; tidak ada yang dapat diubah dari sini.
+                    Penambahan akun dilakukan lewat perintah <code>php artisan sigap:seed</code>,
+                    sedangkan daftar acuan seperti jenis dokumen dan lokasi hunian diatur pada
+                    <code>config/sigap.php</code>.
+                </p>
             </div>
             <span class="badge">Peran aktif: {{ $currentRole['label'] }}</span>
-        </div>
-
-        <div class="triple-grid settings-grid" style="margin-top:0;">
-            <article class="setting-card">
-                <div class="section-icon-wrap stat-icon-wrap"><x-icon name="dashboard" class="section-icon" /></div>
-                <div>
-                    <strong>Master Data</strong>
-                    <p>Referensi kebangsaan, jenis dokumen, lokasi hunian, dan status operasional.</p>
-                </div>
-            </article>
-            <article class="setting-card">
-                <div class="section-icon-wrap stat-icon-wrap tone-green"><x-icon name="users" class="section-icon" /></div>
-                <div>
-                    <strong>Hak Akses &amp; Akun</strong>
-                    <p>Pengelolaan akun petugas beserta pembagian peran dan kewenangannya.</p>
-                </div>
-            </article>
-            <article class="setting-card">
-                <div class="section-icon-wrap stat-icon-wrap tone-orange"><x-icon name="sync" class="section-icon" /></div>
-                <div>
-                    <strong>Cadangan Data</strong>
-                    <p>Jadwal pencadangan berkala dan pemulihan data bila terjadi gangguan.</p>
-                </div>
-            </article>
-            <article class="setting-card">
-                <div class="section-icon-wrap stat-icon-wrap tone-deep"><x-icon name="shield" class="section-icon" /></div>
-                <div>
-                    <strong>Keamanan</strong>
-                    <p>Pengaturan sesi, catatan masuk, dan kontrol perubahan data sensitif.</p>
-                </div>
-            </article>
-            <article class="setting-card">
-                <div class="section-icon-wrap stat-icon-wrap tone-green"><x-icon name="alert" class="section-icon" /></div>
-                <div>
-                    <strong>Notifikasi</strong>
-                    <p>Peringatan dokumen belum lengkap dan jadwal rekap pelaporan.</p>
-                </div>
-            </article>
-            <article class="setting-card">
-                <div class="section-icon-wrap stat-icon-wrap"><x-icon name="file" class="section-icon" /></div>
-                <div>
-                    <strong>Informasi Sistem</strong>
-                    <p>Basis data: Firebase Realtime Database &bull; Penyimpanan berkas: Firebase Storage.</p>
-                </div>
-            </article>
         </div>
     </section>
 

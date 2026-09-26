@@ -1,109 +1,103 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('content')
-    <section class="hero-panel">
-        <div class="hero-copy">
-            <span class="eyebrow"><x-icon name="shield" class="chip-icon" />Portal Login SIGAP</span>
-            <h3>Selamat Datang di SIGAP Rudenim Surabaya.</h3>
-            <p>Pendataan pengungsi luar negeri, dokumen, audit, dan pelaporan dalam satu sistem terpadu. Gunakan akun Laravel produksi atau sesi demo untuk pengujian peran (role) dengan cepat dan aman.</p>
-        </div>
-        <div class="hero-side">
-            <div class="highlight-card">
-                <div class="highlight-head">
-                    <strong>Mode</strong>
-                    <span class="mini-badge success">Role-ready</span>
-                </div>
-                <p>Pilih mode masuk yang sesuai. Jika akun Laravel belum tersedia, login demo tetap bisa dipakai untuk melihat pembatasan per role.</p>
-            </div>
-        </div>
-    </section>
+<div class="auth-stage">
+    {{-- Lambang besar berkadar rendah sebagai latar. --}}
+    <img class="auth-watermark" src="{{ config('branding.logo') }}" alt="" aria-hidden="true">
 
-    <section class="panel" style="margin-top:24px;">
+    {{-- Lengkung emas dan tosca tipis, digambar sebaris agar selalu termuat. --}}
+    <svg class="auth-arcs" viewBox="0 0 900 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <g fill="none" stroke="#c8951a" stroke-opacity=".2">
+            <circle cx="80" cy="630" r="210" stroke-width="1.1"/>
+            <circle cx="80" cy="630" r="300" stroke-width="1.1"/>
+        </g>
+        <g fill="none" stroke="#7fd3e6" stroke-opacity=".15">
+            <circle cx="830" cy="70" r="180" stroke-width="1.1"/>
+            <circle cx="830" cy="70" r="264" stroke-width="1.1"/>
+        </g>
+    </svg>
+
+    <div class="auth-card">
+        <div class="auth-head">
+            <span class="auth-logo">
+                <img src="{{ config('branding.logo') }}" alt="{{ config('branding.logo_alt') }}">
+            </span>
+            <strong>SIGAP</strong>
+            <span class="auth-institution">Rumah Detensi Imigrasi Surabaya</span>
+            <h1>Masuk ke sistem</h1>
+            <p>Gunakan akun petugas yang terdaftar.</p>
+        </div>
+
+        @if ($errors->any())
+            <div class="auth-alert" role="alert">
+                <x-icon name="alert" />
+                <div>
+                    <strong>Belum bisa masuk</strong>
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @elseif (session('status'))
+            <div class="auth-note" role="status">
+                <x-icon name="alert" />
+                <div>{{ session('status') }}</div>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login.store') }}">
             @csrf
-            <div class="double-grid" style="margin-top:0;">
-                <div>
-                    <label class="table-meta">Mode Login</label>
-                    <select class="control" name="login_mode" id="loginMode" required>
-                        @foreach ($authModes as $key => $mode)
-                            <option value="{{ $key }}" @selected(old('login_mode', $defaultAuthMode) === $key)>{{ $mode['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="demo-only-field">
-                    <label class="table-meta">Nama</label>
-                    <input class="control" type="text" name="name" id="demoName" value="{{ old('name', 'Supervisor Shift') }}">
-                </div>
-                <div>
-                    <label class="table-meta">Email</label>
-                    <input class="control" type="email" name="email" id="loginEmail" value="{{ old('email', 'sigap-demo@rudenim.local') }}">
-                </div>
-                <div class="auth-only-field">
-                    <label class="table-meta">Password Laravel</label>
-                    <input class="control" type="password" name="password" id="authPassword" placeholder="Isi saat memakai akun Laravel">
-                </div>
-                <div class="demo-only-field">
-                    <label class="table-meta">Peran</label>
-                    <select class="control" name="role" id="demoRole">
-                        @foreach ($roles as $key => $role)
-                            <option value="{{ $key }}" @selected(old('role', 'supervisor') === $key)>{{ $role['label'] }}</option>
-                        @endforeach
-                    </select>
+
+            <div class="auth-field">
+                <label for="loginEmail">Email</label>
+                <input class="control" type="email" name="email" id="loginEmail"
+                       value="{{ old('email') }}" autocomplete="username"
+                       placeholder="nama@sigap-rudenim.local" required autofocus>
+            </div>
+
+            <div class="auth-field">
+                <label for="authPassword">Kata Sandi</label>
+                <div class="auth-password">
+                    <input class="control" type="password" name="password" id="authPassword"
+                           autocomplete="current-password" placeholder="Masukkan kata sandi" required>
+                    <button type="button" class="auth-eye" id="togglePassword"
+                            aria-label="Tampilkan kata sandi" aria-pressed="false">
+                        <x-icon name="eye" />
+                    </button>
                 </div>
             </div>
-            <div class="subtle-box demo-only-field" id="demoHelp">
-                <h4>Petunjuk singkat</h4>
-                <ul>
-                    <li><strong>Login Demo</strong> memakai nama, email opsional, dan pilihan role.</li>
-                    <li>Pakai mode ini saat review antarmuka, uji role, atau tahap handoff awal.</li>
-                    <li>Role aktif ditentukan dari pilihan Admin, Petugas Pendataan, atau Supervisor.</li>
-                </ul>
-            </div>
-            <div class="subtle-box auth-only-field" id="authHelp">
-                <h4>Petunjuk akun Laravel</h4>
-                <ul>
-                    <li><strong>Akun Laravel</strong> memakai email dan password dari tabel <code>users</code>.</li>
-                    <li>Role aktif dibaca dari kolom <code>role</code> pengguna yang berhasil login.</li>
-                    <li>Mode ini cocok untuk integrasi internal saat auth project target sudah aktif.</li>
-                </ul>
-            </div>
-            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
-                <button class="btn btn-primary" type="submit">
-                    <x-icon name="shield" class="chip-icon" /> Masuk Sekarang
-                </button>
-                <a class="btn btn-ghost" href="{{ route('login') }}">Reset Form</a>
-            </div>
+
+            <button class="btn btn-gold auth-submit" type="submit">
+                <x-icon name="shield" class="chip-icon" /> Masuk
+            </button>
         </form>
-    </section>
 
-    <script>
-        (() => {
-            const modeSelect = document.getElementById('loginMode');
-            const demoFields = document.querySelectorAll('.demo-only-field');
-            const authFields = document.querySelectorAll('.auth-only-field');
-            const demoName = document.getElementById('demoName');
-            const demoRole = document.getElementById('demoRole');
-            const authPassword = document.getElementById('authPassword');
+        <p class="auth-help">
+            Lupa kata sandi atau belum punya akun? Hubungi Admin sistem —
+            akun hanya dapat dibuat oleh petugas yang berwenang.
+        </p>
+    </div>
 
-            const applyMode = () => {
-                const mode = modeSelect?.value || 'demo';
-                const isDemo = mode === 'demo';
+    <p class="auth-foot">
+        Data pada sistem ini bersifat terbatas. Gunakan akun yang diberikan kepada Anda,
+        dan jangan membagikannya kepada siapa pun.
+    </p>
+</div>
 
-                demoFields.forEach((element) => {
-                    element.style.display = isDemo ? '' : 'none';
-                });
+<script>
+    (() => {
+        const tombol = document.getElementById('togglePassword');
+        const kolom = document.getElementById('authPassword');
 
-                authFields.forEach((element) => {
-                    element.style.display = isDemo ? 'none' : '';
-                });
-
-                if (demoName) demoName.required = isDemo;
-                if (demoRole) demoRole.required = isDemo;
-                if (authPassword) authPassword.required = !isDemo;
-            };
-
-            modeSelect?.addEventListener('change', applyMode);
-            applyMode();
-        })();
-    </script>
+        tombol?.addEventListener('click', () => {
+            const tersembunyi = kolom.type === 'password';
+            kolom.type = tersembunyi ? 'text' : 'password';
+            tombol.setAttribute('aria-pressed', String(tersembunyi));
+            tombol.setAttribute('aria-label', tersembunyi ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+            kolom.focus();
+        });
+    })();
+</script>
 @endsection

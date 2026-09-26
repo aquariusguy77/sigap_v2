@@ -21,74 +21,55 @@ class AuthController extends Controller
             return redirect()->route('dashboard.index');
         }
 
-        return view('auth.login', array_merge($this->baseViewData(), [
-            'pageHeading' => 'Masuk ke SIGAP',
-            'pageDescription' => 'Masuk dengan akun terdaftar, atau gunakan mode demo untuk mencoba sistem.',
-            'roles' => $this->roleAccessService->roles(),
-            'authModes' => $this->roleAccessService->authModes(),
-            'defaultAuthMode' => $this->roleAccessService->defaultAuthMode(),
-        ]));
+        return view('auth.login');
     }
 
+    /**
+     * Memeriksa akun dan memulai sesi.
+     *
+     * Mode demo yang dulu ada di sini sudah dihapus. Mode itu memberi akses
+     * penuh hanya bermodal nama dan pilihan peran, tanpa kata sandi sama
+     * sekali, sehingga siapa pun yang membuka alamat aplikasi dapat masuk
+     * sebagai Admin lalu menghapus data. Satu-satunya jalan masuk sekarang
+     * adalah akun terdaftar yang kata sandinya diperiksa terhadap hash bcrypt
+     * di Firebase.
+     */
     public function login(Request $request): RedirectResponse
     {
-        $availableModes = $this->roleAccessService->authModes();
-        $mode = (string) $request->input('login_mode', 'demo');
-
-        if (! array_key_exists($mode, $availableModes)) {
-            return back()
-                ->withErrors(['login_mode' => 'Mode login tidak dikenali.'])
-                ->withInput();
-        }
-
-        if ($mode === 'auth') {
-            $validated = $request->validate([
-                'email' => ['required', 'email', 'max:120'],
-                'password' => ['required', 'string', 'min:6'],
-            ]);
-
-            if (! Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']])) {
-                return back()
-                    ->withErrors(['email' => 'Email atau password tidak cocok.'])
-                    ->withInput($request->except('password'));
-            }
-
-            $request->session()->forget('sigap_user');
-            $request->session()->regenerate();
-
-            return redirect()
-                ->route('dashboard.index')
-                ->with('status', 'Login Laravel berhasil. Role aktif diambil dari akun pengguna.');
-        }
-
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'email' => ['nullable', 'email', 'max:120'],
-            'role' => ['required', 'in:admin,petugas,supervisor'],
+            'email' => ['required', 'email', 'max:120'],
+            'password' => ['required', 'string'],
+        ], [], [
+            'email' => 'email',
+            'password' => 'kata sandi',
         ]);
 
-        Auth::logout();
-        $request->session()->put('sigap_user', [
-            'name' => $validated['name'],
-            'email' => $validated['email'] ?? null,
-            'role' => $validated['role'],
-        ]);
+        if (! Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']])) {
+            /*
+             * Sengaja tidak membedakan "email tidak terdaftar" dari "kata sandi
+             * salah", agar halaman ini tidak dapat dipakai menebak email mana
+             * yang punya akun.
+             */
+            return back()
+                ->withErrors(['email' => 'Email atau kata sandi tidak cocok.'])
+                ->withInput($request->except('password'));
+        }
+
         $request->session()->regenerate();
 
         return redirect()
             ->route('dashboard.index')
-            ->with('status', 'Sesi demo berhasil dimulai sebagai ' . ($this->roleAccessService->roles()[$validated['role']]['label'] ?? $validated['role']) . '.');
+            ->with('status', 'Berhasil masuk. Peran aktif mengikuti akun Anda.');
     }
 
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
-        $request->session()->forget('sigap_user');
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect()
             ->route('login')
-            ->with('status', 'Sesi demo sudah diakhiri.');
+            ->with('status', 'Anda sudah keluar dari sistem.');
     }
 }

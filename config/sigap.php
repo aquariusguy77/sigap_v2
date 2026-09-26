@@ -11,12 +11,14 @@ return [
         'long' => 'Rumah Detensi Imigrasi Surabaya',
     ],
 
-    'auth' => [
-        'login_mode' => env('SIGAP_LOGIN_MODE', 'hybrid'),
-        'demo_enabled' => (bool) env('SIGAP_DEMO_LOGIN_ENABLED', true),
-        'laravel_auth_enabled' => (bool) env('SIGAP_LARAVEL_AUTH_ENABLED', true),
-        'active_role_fallback' => env('SIGAP_ACTIVE_ROLE'),
-    ],
+    /*
+     * Tidak ada lagi setelan mode masuk di sini.
+     *
+     * Mode demo, sakelar mode masuk, dan peran cadangan lewat SIGAP_ACTIVE_ROLE
+     * sudah dihapus seluruhnya. Ketiganya sama-sama dapat membuka akses tanpa
+     * kata sandi, dan yang terakhir bahkan aktif hanya karena satu variabel
+     * lingkungan salah diisi. Satu-satunya jalan masuk kini akun terdaftar.
+     */
 
     'data' => [
         'sample_data_enabled' => (bool) env('SIGAP_SAMPLE_DATA_ENABLED', true),

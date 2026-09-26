@@ -7,48 +7,12 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Menentukan peran pengguna aktif dan kewenangannya.
  *
- * Peran diambil dari akun Firebase yang sedang login, atau dari sesi demo bila
- * mode demo diaktifkan.
+ * Peran diambil dari akun Firebase yang sedang login. Mode demo yang dulu
+ * memungkinkan masuk tanpa kata sandi sudah dihapus, sehingga tidak ada lagi
+ * peran yang berasal dari sesi tanpa akun.
  */
 class RoleAccessService
 {
-    public function authModes(): array
-    {
-        $modes = [];
-
-        if ((bool) config('sigap.auth.demo_enabled', true)) {
-            $modes['demo'] = [
-                'label' => 'Login Demo',
-                'description' => 'Masuk cepat dengan peran simulasi, tanpa akun.',
-            ];
-        }
-
-        if ((bool) config('sigap.auth.laravel_auth_enabled', true)) {
-            $modes['auth'] = [
-                'label' => 'Akun Terdaftar',
-                'description' => 'Masuk dengan email dan kata sandi dari Firebase.',
-            ];
-        }
-
-        return $modes;
-    }
-
-    public function defaultAuthMode(): string
-    {
-        $configured = (string) config('sigap.auth.login_mode', 'hybrid');
-        $modes = $this->authModes();
-
-        if ($configured === 'auth' && array_key_exists('auth', $modes)) {
-            return 'auth';
-        }
-
-        if ($configured === 'demo' && array_key_exists('demo', $modes)) {
-            return 'demo';
-        }
-
-        return array_key_first($modes) ?? 'demo';
-    }
-
     public function roles(): array
     {
         return [
@@ -78,12 +42,13 @@ class RoleAccessService
 
     public function currentRoleKey(): string
     {
-        $authRole = Auth::check() ? (string) (Auth::user()->role ?? '') : '';
-        $sessionRole = (string) session('sigap_user.role', '');
-        $envRole = (string) config('sigap.auth.active_role_fallback', '');
+        $role = Auth::check() ? (string) (Auth::user()->role ?? '') : '';
 
-        $role = $authRole !== '' ? $authRole : ($sessionRole !== '' ? $sessionRole : $envRole);
-
+        /*
+         * Peran yang tidak dikenal jatuh ke supervisor, peran dengan kewenangan
+         * paling sempit. Lebih baik petugas kekurangan akses lalu melapor,
+         * daripada kelebihan akses tanpa ada yang menyadari.
+         */
         return array_key_exists($role, $this->roles()) ? $role : 'supervisor';
     }
 
@@ -94,23 +59,26 @@ class RoleAccessService
         }
 
         $key = $this->currentRoleKey();
-        $source = Auth::check() && filled(Auth::user()->role ?? null)
-            ? 'auth'
-            : (filled(session('sigap_user.role')) ? 'session' : 'env');
 
         return [
             'key' => $key,
             'label' => $this->roles()[$key]['label'],
             'abilities' => $this->roles()[$key]['abilities'],
-            'source' => $source,
+            'source' => 'auth',
         ];
     }
 
+    /**
+     * Satu-satunya penentu apakah seseorang sudah masuk.
+     *
+     * Dulu metode ini juga menganggap masuk bila sesi menyimpan peran demo,
+     * atau bila variabel SIGAP_ACTIVE_ROLE diisi di lingkungan. Keduanya
+     * dihapus: yang pertama membuka akses tanpa kata sandi, yang kedua membuat
+     * setiap pengunjung otomatis berperan begitu variabelnya salah diisi.
+     */
     public function isSignedIn(): bool
     {
-        return Auth::check()
-            || filled(session('sigap_user.role'))
-            || array_key_exists((string) config('sigap.auth.active_role_fallback', ''), $this->roles());
+        return Auth::check();
     }
 
     public function currentUser(): array
@@ -119,14 +87,6 @@ class RoleAccessService
             return [
                 'name' => (string) (Auth::user()->name ?? 'Pengguna'),
                 'email' => (string) (Auth::user()->email ?? ''),
-                'role' => $this->currentRole(),
-            ];
-        }
-
-        if (filled(session('sigap_user.name'))) {
-            return [
-                'name' => (string) session('sigap_user.name'),
-                'email' => (string) session('sigap_user.email', ''),
                 'role' => $this->currentRole(),
             ];
         }

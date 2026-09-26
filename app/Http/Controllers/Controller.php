@@ -20,7 +20,7 @@ abstract class Controller
             ['route' => 'documents.index', 'label' => 'Dokumen', 'icon' => 'folder', 'visible' => $isSignedIn],
             ['route' => 'history.index', 'label' => 'Riwayat Perubahan', 'icon' => 'history', 'visible' => $isSignedIn && $roleAccess->can('review-changes')],
             ['route' => 'reports.index', 'label' => 'Laporan', 'icon' => 'report', 'visible' => $isSignedIn && $roleAccess->can('view-reports')],
-            ['route' => 'settings.index', 'label' => 'Pengaturan', 'icon' => 'settings', 'visible' => $isSignedIn && $roleAccess->can('manage-settings')],
+            ['route' => 'settings.index', 'label' => 'Hak Akses', 'icon' => 'shield', 'visible' => $isSignedIn && $roleAccess->can('manage-settings')],
         ];
 
         return [

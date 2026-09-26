@@ -19,8 +19,8 @@ class SettingController extends Controller
         $this->ensureAbility('manage-settings');
 
         return view('settings.index', array_merge($this->baseViewData(), [
-            'pageHeading' => 'Pengaturan',
-            'pageDescription' => 'Hak akses, keamanan, dan akun pengguna sistem.',
+            'pageHeading' => 'Hak Akses',
+            'pageDescription' => 'Akun terdaftar beserta kewenangan tiap peran. Halaman ini bersifat baca-saja.',
             'roles' => $this->roleAccessService->roles(),
             'roleFlow' => $this->roleAccessService->flow(),
             'accounts' => $this->users->listing(),

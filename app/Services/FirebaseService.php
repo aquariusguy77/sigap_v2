@@ -7,11 +7,6 @@ class FirebaseService
     public function appConfig(): array
     {
         return [
-            'auth' => [
-                'login_mode' => config('sigap.auth.login_mode', 'hybrid'),
-                'demo_enabled' => (bool) config('sigap.auth.demo_enabled', true),
-                'laravel_auth_enabled' => (bool) config('sigap.auth.laravel_auth_enabled', true),
-            ],
             'data' => [
                 'sample_data_enabled' => (bool) config('sigap.data.sample_data_enabled', true),
                 'firebase_read_enabled' => (bool) config('sigap.data.firebase_read_enabled', true),

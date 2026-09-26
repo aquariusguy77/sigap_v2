@@ -119,7 +119,16 @@ api/index.php      Titik masuk khusus Vercel
 
 ## Keamanan
 
+- Satu-satunya jalan masuk adalah akun terdaftar. Mode demo yang dulu memberi
+  akses penuh hanya bermodal nama dan pilihan peran — tanpa kata sandi sama
+  sekali — sudah dihapus, begitu pula peran cadangan lewat `SIGAP_ACTIVE_ROLE`
+  yang membuat setiap pengunjung otomatis berperan bila variabelnya diisi.
 - Kata sandi disimpan sebagai hash bcrypt di Firebase.
+- Pesan gagal masuk tidak membedakan email yang tidak terdaftar dari kata sandi
+  yang salah, agar halaman masuk tidak dapat dipakai menebak email mana yang
+  punya akun.
+- Halaman **Hak Akses** bersifat baca-saja: menampilkan akun terdaftar dan
+  kewenangan tiap peran, tanpa satu pun kendali yang dapat diubah dari sana.
 - Otorisasi Firebase memakai service account, ditukar menjadi access token
   berumur pendek secara otomatis.
 - Aturan keamanan Firebase dapat ditutup rapat karena aplikasi mengakses lewat
