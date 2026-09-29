@@ -11,6 +11,8 @@ class RefugeeRepository extends Repository
         'name',
         'nationality',
         'unhcr_number',
+        // Nomor yang dihubungi petugas saat pengawasan lapangan.
+        'phone',
         'status',
         'location',
         'document_status',

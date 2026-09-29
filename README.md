@@ -123,6 +123,10 @@ api/index.php      Titik masuk khusus Vercel
   akses penuh hanya bermodal nama dan pilihan peran — tanpa kata sandi sama
   sekali — sudah dihapus, begitu pula peran cadangan lewat `SIGAP_ACTIVE_ROLE`
   yang membuat setiap pengunjung otomatis berperan bila variabelnya diisi.
+- Kata sandi tiga akun awal tidak tertulis di dalam kode. `sigap:seed`
+  mengambilnya dari `SIGAP_SEED_*_PASSWORD`, atau membuatkan kata sandi acak
+  yang ditampilkan sekali di layar. Menjalankan ulang perintah itu tidak
+  mengubah kata sandi akun yang sudah ada.
 - Kata sandi disimpan sebagai hash bcrypt di Firebase.
 - Pesan gagal masuk tidak membedakan email yang tidak terdaftar dari kata sandi
   yang salah, agar halaman masuk tidak dapat dipakai menebak email mana yang

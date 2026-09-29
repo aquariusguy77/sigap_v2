@@ -19,7 +19,7 @@ class DashboardController extends Controller
             'pageDescription' => 'Ringkasan data pengungsi, dokumen, dan aktivitas terbaru.',
             'stats' => $this->sigapDataService->stats(),
             'activities' => $this->sigapDataService->recentActivities(),
-            'refugees' => $this->sigapDataService->refugees()->take(5),
+            'refugees' => $this->sigapDataService->recentlyUpdatedRefugees(),
             'locationSummary' => $this->sigapDataService->locationSummary(),
         ]));
     }

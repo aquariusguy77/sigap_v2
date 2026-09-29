@@ -76,7 +76,7 @@ class ReportExportService
             'penempatan' => ['Pengungsi', 'Kategori', 'Lokasi / Alamat', 'Masuk', 'Keluar', 'Status'],
             'riwayat' => ['Aktivitas', 'Rincian Perubahan', 'Pelaksana', 'Waktu'],
             'prioritas' => ['ID Internal', 'Nama', 'Kebangsaan', 'Lokasi', 'Kelengkapan Dokumen'],
-            default => ['ID Internal', 'Nama', 'Kebangsaan', 'Nomor UNHCR', 'Status', 'Lokasi', 'Kelengkapan Dokumen'],
+            default => ['ID Internal', 'Nama', 'Kebangsaan', 'Nomor UNHCR', 'Telepon', 'Status', 'Lokasi', 'Kelengkapan Dokumen'],
         };
     }
 
@@ -98,6 +98,7 @@ class ReportExportService
             $item->name ?: '-',
             $item->nationality ?: '-',
             $item->unhcr_number ?: '-',
+            $item->phone ?: '-',
             $item->status ?: '-',
             $item->location ?: '-',
             $item->document_status ?: '-',

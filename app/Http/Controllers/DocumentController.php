@@ -156,7 +156,13 @@ class DocumentController extends Controller
      */
     public function file(string $berkas): StreamedResponse
     {
-        $this->ensureAbility('view-reports');
+        /*
+         * Semula rute ini menuntut view-reports, kewenangan yang tidak dimiliki
+         * Petugas Pendataan. Akibatnya petugas dapat mengunggah berkas tetapi
+         * ditolak saat hendak membukanya kembali. Ketiga peran yang memang
+         * berurusan dengan dokumen kini sama-sama diizinkan.
+         */
+        $this->ensureAnyAbility(['manage-documents', 'verify-documents', 'view-reports']);
 
         $stored = $this->firebaseStorage->fetchFromRealtimeDatabase($berkas);
 

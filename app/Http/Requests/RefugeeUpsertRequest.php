@@ -21,6 +21,13 @@ class RefugeeUpsertRequest extends FormRequest
             'internal_id' => ['required', 'string', 'max:50', 'regex:/^RDS-\d{5}$/'],
             'name' => ['required', 'string', 'min:3', 'max:150', 'regex:/^[\pL\s\.\'\-]+$/u'],
             'nationality' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\.\'\-]+$/u'],
+
+            /*
+             * Nomor telepon. Boleh dikosongkan karena tidak setiap pengungsi
+             * memiliki nomor yang dapat dihubungi, tetapi bila diisi harus
+             * berupa nomor yang wajar agar berguna saat pengawasan lapangan.
+             */
+            'phone' => ['nullable', 'string', 'min:7', 'max:25', 'regex:/^[0-9+][0-9\s\-]*$/'],
             'unhcr_number' => ['nullable', 'string', 'max:100', 'regex:/^[A-Z0-9\-\/]+$/'],
             'status' => ['required', Rule::in(config('sigap.reference.refugee_statuses', []))],
             'location' => ['required', Rule::in(config('sigap.reference.refugee_locations', []))],
@@ -71,6 +78,7 @@ class RefugeeUpsertRequest extends FormRequest
             'internal_id' => strtoupper(trim((string) $this->input('internal_id'))),
             'name' => trim((string) $this->input('name')),
             'nationality' => trim((string) $this->input('nationality')),
+            'phone' => trim((string) $this->input('phone')),
             'unhcr_number' => strtoupper(trim((string) $this->input('unhcr_number'))),
             'location' => trim((string) $this->input('location')),
             'notes' => trim((string) $this->input('notes')),
@@ -83,6 +91,8 @@ class RefugeeUpsertRequest extends FormRequest
             'internal_id.regex' => 'ID internal harus memakai format RDS-24001.',
             'name.regex' => 'Nama hanya boleh berisi huruf, spasi, titik, petik, dan tanda hubung.',
             'nationality.regex' => 'Kebangsaan hanya boleh berisi huruf, spasi, titik, petik, dan tanda hubung.',
+            'phone.regex' => 'Nomor telepon hanya boleh berisi angka, spasi, tanda hubung, dan tanda + di awal.',
+            'phone.min' => 'Nomor telepon terlalu pendek untuk dapat dihubungi.',
             'unhcr_number.regex' => 'Nomor UNHCR hanya boleh berisi huruf kapital, angka, garis miring, dan tanda hubung.',
             'status.in' => 'Status data harus Aktif atau Perlu Verifikasi.',
             'documents.*.file.mimes' => 'Berkas dokumen harus berupa PDF, JPG, JPEG, atau PNG.',
@@ -98,6 +108,7 @@ class RefugeeUpsertRequest extends FormRequest
             'internal_id' => 'ID internal',
             'name' => 'nama lengkap',
             'nationality' => 'kebangsaan',
+            'phone' => 'nomor telepon',
             'unhcr_number' => 'nomor UNHCR',
             'status' => 'status data',
             'location' => 'lokasi aktif',
@@ -112,6 +123,7 @@ class RefugeeUpsertRequest extends FormRequest
             'internal_id' => (string) $this->input('internal_id'),
             'name' => (string) $this->input('name'),
             'nationality' => (string) $this->input('nationality'),
+            'phone' => $this->input('phone') ?: null,
             'unhcr_number' => $this->input('unhcr_number'),
             'status' => (string) $this->input('status'),
             'location' => $this->input('location'),

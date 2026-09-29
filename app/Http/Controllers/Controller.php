@@ -50,6 +50,27 @@ abstract class Controller
         }
     }
 
+    /**
+     * Memastikan peran aktif punya salah satu dari beberapa kewenangan.
+     *
+     * Beberapa tindakan wajar dilakukan lebih dari satu peran. Mengunduh
+     * berkas dokumen, misalnya, dilakukan Petugas Pendataan yang mengunggahnya
+     * maupun Supervisor yang memverifikasinya — padahal keduanya memegang
+     * kewenangan yang berbeda namanya.
+     */
+    protected function ensureAnyAbility(array $abilities): void
+    {
+        $roleAccess = app(RoleAccessService::class);
+
+        foreach ($abilities as $ability) {
+            if ($roleAccess->can($ability)) {
+                return;
+            }
+        }
+
+        throw new HttpException(403, 'Akses ditolak untuk peran aktif saat ini.');
+    }
+
     protected function currentActorName(): string
     {
         $roleAccess = app(RoleAccessService::class);

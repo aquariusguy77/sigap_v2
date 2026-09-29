@@ -102,6 +102,26 @@ class SigapDataService
         return $this->refugees->all();
     }
 
+    /**
+     * Pengungsi yang datanya paling belakangan diubah.
+     *
+     * Daftar pengungsi biasa diurutkan menurut nama, dan itu memang benar
+     * untuk halaman daftar. Tetapi panel dasbor berjudul "Pengungsi terakhir
+     * diperbarui" ikut memakai urutan itu, sehingga yang tampil sebenarnya
+     * lima nama paling awal menurut abjad — judulnya menjanjikan satu hal,
+     * isinya menunjukkan hal lain.
+     *
+     * Urutannya kini benar-benar mengikuti updated_at, yang memang selalu
+     * ditulis ulang oleh Repository setiap kali data disimpan.
+     */
+    public function recentlyUpdatedRefugees(int $limit = 5): Collection
+    {
+        return $this->refugees()
+            ->sortByDesc(fn (Record $item) => (string) ($item->attributes['updated_at'] ?? ''))
+            ->take($limit)
+            ->values();
+    }
+
     public function refugeeById(string $id): ?Record
     {
         return $this->refugees->find($id);

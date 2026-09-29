@@ -47,6 +47,7 @@
             </div>
             <div class="list-group">
                 <article class="list-item"><strong>Kebangsaan</strong><p>{{ $refugee->nationality }}</p></article>
+                <article class="list-item"><strong>Nomor Telepon</strong><p>{{ $refugee->phone ?: 'Tidak ada nomor yang dapat dihubungi.' }}</p></article>
                 <article class="list-item"><strong>Status</strong><p>{{ $refugee->status }}</p></article>
                 <article class="list-item"><strong>Catatan</strong><p>{{ $refugee->notes ?: 'Belum ada catatan.' }}</p></article>
             </div>
