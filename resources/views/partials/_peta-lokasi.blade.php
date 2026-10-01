@@ -50,7 +50,7 @@
                    style="position:absolute;inset:0;display:block;"></a>
             </div>
             <p class="table-meta" style="margin-top:8px;">
-                Titik pada peta: {{ $petaLintang }}, {{ $petaBujur }} &bull; peta dari OpenStreetMap, navigasi memakai Google Maps.
+                Titik pada peta: {{ $petaLintang }}, {{ $petaBujur }} • peta dari OpenStreetMap, navigasi memakai Google Maps.
             </p>
         @else
             <div class="subtle-box" style="margin-top:0;">

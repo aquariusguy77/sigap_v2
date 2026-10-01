@@ -19,9 +19,13 @@ class HistoryController extends Controller
         return view('history.index', array_merge($this->baseViewData(), [
             'pageHeading' => 'Riwayat Perubahan',
             'pageDescription' => 'Catatan perubahan data beserta pelaksana dan waktunya.',
-            'history' => $this->sigapDataService->history(),
-            'activities' => $this->sigapDataService->recentActivities(),
-            'reportLogs' => $this->sigapDataService->reportLogs(),
+            /*
+             * Dibatasi agar halaman muat satu layar. Riwayat lengkap tetap
+             * tersimpan dan dapat diunduh lewat laporan Riwayat Perubahan.
+             */
+            'history' => $this->sigapDataService->history()->take(3),
+            'activities' => $this->sigapDataService->recentActivities(3),
+            'reportLogs' => $this->sigapDataService->reportLogs()->take(2),
         ]));
     }
 }

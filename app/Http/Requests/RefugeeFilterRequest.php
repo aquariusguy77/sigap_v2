@@ -36,7 +36,7 @@ class RefugeeFilterRequest extends FormRequest
             'document_status' => (string) $this->input('document_status', ''),
             'sort' => (string) $this->input('sort', 'name'),
             'direction' => (string) $this->input('direction', 'asc'),
-            'per_page' => (int) $this->input('per_page', 10),
+            'per_page' => (int) $this->input('per_page', 5),
         ];
     }
 }

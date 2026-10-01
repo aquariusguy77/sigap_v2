@@ -26,7 +26,7 @@ class ReportController extends Controller
             'pageHeading' => 'Laporan',
             'pageDescription' => 'Unduh rekap operasional dalam bentuk PDF atau CSV.',
             'reports' => $this->reportCards(),
-            'reportLogs' => $this->sigapDataService->reportLogs(),
+            'reportLogs' => $this->sigapDataService->reportLogs()->take(3),
         ]));
     }
 

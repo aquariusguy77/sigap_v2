@@ -33,7 +33,7 @@ class DocumentController extends Controller
             'keyword' => trim((string) request('keyword', '')),
             'status' => (string) request('status', ''),
             'type' => (string) request('type', ''),
-            'per_page' => max(5, min((int) request('per_page', 10), 20)),
+            'per_page' => max(5, min((int) request('per_page', 5), 20)),
         ];
 
         return view('documents.index', array_merge($this->baseViewData(), [

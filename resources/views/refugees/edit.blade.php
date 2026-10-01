@@ -7,7 +7,7 @@
                 <span class="section-tag"><x-icon name="users" class="chip-icon" />Sedang diubah</span>
                 <h3>{{ $refugee->name ?? 'Data Pengungsi' }}</h3>
                 <p class="section-intro">
-                    {{ $refugee->internal_id ?? '-' }} &bull; {{ $refugee->status ?? '-' }} &bull; {{ $refugee->location ?? '-' }}
+                    {{ $refugee->internal_id ?? '-' }} • {{ $refugee->status ?? '-' }} • {{ $refugee->location ?? '-' }}
                 </p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">

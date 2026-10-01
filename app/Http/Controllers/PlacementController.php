@@ -27,7 +27,7 @@ class PlacementController extends Controller
         $filters = [
             'keyword' => trim((string) request('keyword', '')),
             'status' => (string) request('status', ''),
-            'per_page' => max(5, min((int) request('per_page', 10), 20)),
+            'per_page' => max(5, min((int) request('per_page', 5), 20)),
         ];
 
         return view('placements.index', array_merge($this->baseViewData(), [

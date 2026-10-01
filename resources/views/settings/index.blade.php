@@ -7,10 +7,7 @@
                 <span class="section-tag"><x-icon name="shield" class="chip-icon" />Hak Akses</span>
                 <h3>Akun dan kewenangan</h3>
                 <p class="section-intro">
-                    Halaman ini hanya menampilkan keadaan sistem; tidak ada yang dapat diubah dari sini.
-                    Penambahan akun dilakukan lewat perintah <code>php artisan sigap:seed</code>,
-                    sedangkan daftar acuan seperti jenis dokumen dan lokasi hunian diatur pada
-                    <code>config/sigap.php</code>.
+                    Baca-saja. Penambahan akun lewat <code>php artisan sigap:seed</code>; daftar acuan diatur di <code>config/sigap.php</code>.
                 </p>
             </div>
             <span class="badge">Peran aktif: {{ $currentRole['label'] }}</span>
@@ -83,7 +80,7 @@
                 @foreach ($roles as $key => $role)
                     <article class="list-item">
                         <strong>{{ $role['label'] }}</strong>
-                        <p>{{ collect($role['abilities'])->map(fn ($a) => $abilityLabels[$a] ?? $a)->implode(' &bull; ') }}</p>
+                        <p>{{ collect($role['abilities'])->map(fn ($a) => $abilityLabels[$a] ?? $a)->implode(' • ') }}</p>
                     </article>
                 @endforeach
             </div>

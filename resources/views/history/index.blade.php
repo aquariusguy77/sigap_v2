@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <section class="panel section-anchor" id="riwayat">
+    <section class="panel section-anchor" id="riwayat" style="margin-bottom:10px;">
         <div class="section-head">
             <div>
                 <span class="section-tag"><x-icon name="history" class="chip-icon" />Riwayat Perubahan</span>
@@ -54,7 +54,7 @@
                         <div>
                             <strong>{{ $item['title'] }}</strong>
                             <p>{{ $item['detail'] }}</p>
-                            <div class="timeline-meta">{{ $item['actor'] }} &bull; {{ $item['time'] }}</div>
+                            <div class="timeline-meta">{{ $item['actor'] }} • {{ $item['time'] }}</div>
                         </div>
                     </article>
                 @empty
@@ -77,7 +77,7 @@
                     <article class="list-item">
                         <strong>{{ $log['type'] }}</strong>
                         <p>{{ $log['filters'] }}</p>
-                        <div class="timeline-meta">{{ $log['actor'] }} &bull; {{ $log['downloaded_at'] }}</div>
+                        <div class="timeline-meta">{{ $log['actor'] }} • {{ $log['downloaded_at'] }}</div>
                     </article>
                 @empty
                     <p class="table-meta" style="margin:0;">Belum ada unduhan laporan.</p>

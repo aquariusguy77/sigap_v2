@@ -7,30 +7,41 @@
         @page { margin: 22mm 14mm 18mm 14mm; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 9pt; color: #12303a; margin: 0; }
 
-        .kop { border-bottom: 2px solid #0d5c6d; padding-bottom: 10px; margin-bottom: 14px; }
+        /*
+            Kop surat resmi: lambang di kiri, seluruh tulisan di tengah.
+            Kolom kanan dibuat selebar kolom lambang agar blok tulisannya
+            benar-benar berada di tengah kertas, bukan bergeser ke kanan.
+        */
+        .kop { border-bottom: 2.4px solid #0d5c6d; padding-bottom: 8px; margin-bottom: 4px; }
         .kop table { width: 100%; border-collapse: collapse; }
         .kop td { vertical-align: middle; border: none; padding: 0; }
-        .kop .logo { width: 62px; }
-        .kop .logo img { width: 54px; }
-        .kop .instansi { font-size: 8.5pt; letter-spacing: .6px; color: #4a6b75; text-transform: uppercase; }
-        .kop .nama { font-size: 14pt; font-weight: bold; color: #0d5c6d; margin: 2px 0; }
-        .kop .alamat { font-size: 8pt; color: #5d7884; }
+        .kop .logo, .kop .penyeimbang { width: 68px; }
+        .kop .logo img { width: 58px; }
+        .kop .tengah { text-align: center; }
+        .kop .kementerian { font-size: 10pt; letter-spacing: .4px; color: #12303a; text-transform: uppercase; }
+        .kop .nama { font-size: 13.5pt; font-weight: bold; color: #0d5c6d; text-transform: uppercase; letter-spacing: .5px; margin: 1px 0 2px; }
+        .kop .alamat { font-size: 7.6pt; color: #5d7884; line-height: 1.35; }
+        /* Garis tipis kedua, ciri khas kop surat resmi. */
+        .kop-garis { border-top: 0.8px solid #0d5c6d; margin-bottom: 13px; }
 
-        .judul { text-align: center; margin: 0 0 12px; }
-        .judul h1 { font-size: 12pt; margin: 0 0 3px; text-transform: uppercase; letter-spacing: .5px; }
-        .judul p { font-size: 8.5pt; color: #5d7884; margin: 0; }
+        .judul { text-align: center; margin: 0 0 11px; }
+        .judul h1 { font-size: 11.5pt; margin: 0 0 3px; text-transform: uppercase; letter-spacing: .5px; }
+        .judul p { font-size: 8pt; color: #5d7884; margin: 0; }
 
         table.data { width: 100%; border-collapse: collapse; }
+        table.data { table-layout: fixed; word-wrap: break-word; }
         table.data th {
-            background: #0d5c6d; color: #fff; font-size: 8pt; text-align: left;
-            padding: 6px 7px; border: 1px solid #0d5c6d;
+            background: #0d5c6d; color: #fff; font-size: 7.2pt; text-align: left;
+            padding: 4px 4px; border: 1px solid #0d5c6d;
         }
-        table.data td { padding: 5px 7px; border: 1px solid #cfdde1; font-size: 8.5pt; }
+        table.data td { padding: 4px 4px; border: 1px solid #cfdde1; font-size: 7.4pt; line-height: 1.32; }
         table.data tr:nth-child(even) td { background: #f4fafb; }
-        table.data td.nomor { text-align: center; width: 26px; }
+        /* Dengan table-layout: fixed, lebar harus ditetapkan di baris kepala. */
+        table.data th:first-child { width: 26px; text-align: center; }
+        table.data td.nomor { text-align: center; }
         .kosong { text-align: center; padding: 20px; color: #6b8792; font-style: italic; }
 
-        .ttd { margin-top: 22px; width: 100%; }
+        .ttd { margin-top: 20px; width: 100%; }
         .ttd td { border: none; font-size: 8.5pt; vertical-align: top; }
         .ttd .kanan { text-align: left; width: 40%; }
         .ttd .garis { margin-top: 44px; border-top: 1px solid #12303a; width: 165px; padding-top: 3px; }
@@ -44,16 +55,20 @@
     <table>
         <tr>
             <td class="logo">@if (filled($logo))<img src="{{ $logo }}" alt="Lambang Imigrasi">@endif</td>
-            <td>
-                <div class="instansi">Kementerian Imigrasi dan Pemasyarakatan</div>
+            <td class="tengah">
+                <div class="kementerian">Kementerian Imigrasi dan Pemasyarakatan</div>
                 <div class="nama">Rumah Detensi Imigrasi Surabaya</div>
                 <div class="alamat">
-                    SIGAP &mdash; Sistem Informasi &amp; Gerakan Administratif Pengungsi
+                    SIGAP &mdash; Sistem Informasi &amp; Gerakan Administratif Pengungsi<br>
+                    Jalan Raya Waru No. 1, Sidoarjo, Jawa Timur
                 </div>
             </td>
+            {{-- Kolom kosong selebar lambang, penyeimbang agar tulisan benar-benar di tengah. --}}
+            <td class="penyeimbang"></td>
         </tr>
     </table>
 </div>
+<div class="kop-garis"></div>
 
 <div class="judul">
     <h1>{{ $title }}</h1>

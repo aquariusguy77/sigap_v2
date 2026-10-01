@@ -62,11 +62,17 @@ class ReportExportService
     }
 
     /**
-     * Laporan berkolom banyak dicetak melintang agar tetap terbaca.
+     * Seluruh laporan dicetak tegak.
+     *
+     * Sebelumnya laporan berkolom banyak otomatis dicetak melintang, sehingga
+     * satu berkas laporan bisa berisi halaman dengan orientasi berbeda-beda —
+     * merepotkan saat dijilid maupun dilampirkan. Agar tetap terbaca, kolom
+     * yang banyak ditangani lewat ukuran huruf pada template, bukan dengan
+     * memutar kertasnya.
      */
     public function orientation(string $key): string
     {
-        return count($this->headings($key)) > 5 ? 'landscape' : 'portrait';
+        return 'portrait';
     }
 
     public function headings(string $key): array
@@ -75,8 +81,8 @@ class ReportExportService
             'dokumen' => ['Jenis Dokumen', 'Pengungsi', 'Nama Berkas', 'Status Verifikasi', 'Tanggal Unggah'],
             'penempatan' => ['Pengungsi', 'Kategori', 'Lokasi / Alamat', 'Masuk', 'Keluar', 'Status'],
             'riwayat' => ['Aktivitas', 'Rincian Perubahan', 'Pelaksana', 'Waktu'],
-            'prioritas' => ['ID Internal', 'Nama', 'Kebangsaan', 'Lokasi', 'Kelengkapan Dokumen'],
-            default => ['ID Internal', 'Nama', 'Kebangsaan', 'Nomor UNHCR', 'Telepon', 'Status', 'Lokasi', 'Kelengkapan Dokumen'],
+            'prioritas' => ['ID Internal', 'Nama', 'Kebangsaan', 'Lokasi', 'Kelengkapan'],
+            default => ['ID Internal', 'Nama', 'Kebangsaan', 'Nomor UNHCR', 'Telepon', 'Status', 'Lokasi', 'Kelengkapan'],
         };
     }
 

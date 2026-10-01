@@ -23,7 +23,7 @@
         --shadow-sm:0 2px 8px rgba(13,59,69,.06);
         --shadow:0 8px 24px rgba(13,59,69,.07);
         --sidebar-width:252px;
-        --topbar-height:62px;
+        --topbar-height:54px;
         --r-sm:8px;
         --r:10px;
         --r-md:12px;
@@ -31,7 +31,7 @@
     }
 
     *{box-sizing:border-box}
-    html{scroll-behavior:smooth;font-size:15px}
+    html{scroll-behavior:smooth;font-size:14px}
     body{
         margin:0;
         font-family:'Plus Jakarta Sans',Inter,"Segoe UI",sans-serif;
@@ -146,7 +146,7 @@
     .topbar{
         position:sticky;top:0;z-index:15;
         display:flex;align-items:center;gap:14px;
-        min-height:var(--topbar-height);padding:10px 20px;
+        min-height:var(--topbar-height);padding:7px 18px;
         background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
         border-bottom:1px solid var(--line);
     }
@@ -193,7 +193,7 @@
     .user-chip small{display:block;color:var(--muted);font-size:.68rem}
 
     /* ============ PAGE BODY ============ */
-    .page-body{padding:18px 20px 26px;flex:1 1 auto}
+    .page-body{padding:10px 16px 8px;flex:1 1 auto}
 
     /* ============ HERO ============ */
     .hero-panel{
@@ -240,7 +240,7 @@
     .panel,.stat-card,.list-item,.timeline-item,.setting-card{
         background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
     }
-    .panel{padding:18px;box-shadow:var(--shadow-xs)}
+    .panel{padding:12px 13px;box-shadow:var(--shadow-xs)}
     .stat-card{
         padding:14px 15px;box-shadow:var(--shadow-xs);
         transition:border-color .16s ease,box-shadow .16s ease;
@@ -262,7 +262,7 @@
     .section-head,.split-header,.setting-head,.table-toolbar{
         display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;
     }
-    .section-head{margin-bottom:14px}
+    .section-head{margin-bottom:10px}
     .section-tag{
         display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:99px;
         background:var(--tosca-tint);color:var(--tosca-deep);font-size:.68rem;font-weight:600;
@@ -379,7 +379,7 @@
     .list-item p,.timeline-item p,.setting-card p,
     .doc-card p,.report-card p,.step-card p{margin:0;color:var(--muted);font-size:.76rem;line-height:1.55}
     .list-item h3{font-size:.86rem}
-    .timeline-item{display:grid;grid-template-columns:34px minmax(0,1fr);gap:11px;align-items:start}
+    .timeline-item{display:grid;grid-template-columns:30px minmax(0,1fr);gap:9px;align-items:start}
     .timeline-mark{
         width:34px;height:34px;display:grid;place-items:center;border-radius:9px;
         background:var(--tosca-tint);color:var(--tosca-deep);
@@ -482,4 +482,62 @@
         .page-title p{display:none}
         .filters-actions{grid-column:1/-1}
     }
+
+    /* ================================================================
+       Perapatan tata letak untuk layar laptop.
+       Sasarannya satu: seluruh menu muat dalam satu layar 1366x768 tanpa
+       perlu digulir naik-turun. Yang dikurangi hanya ruang kosong —
+       tinggi baris, jarak antarbagian, dan tinggi kolom isian — bukan
+       ukuran huruf isinya, supaya tetap nyaman dibaca.
+       ================================================================ */
+    .panel + .panel,
+    section + section { margin-top: 8px; }
+    .section-head h3 { font-size: 1.02rem; margin: 2px 0 3px; }
+    .section-intro { font-size: .82rem; line-height: 1.45; margin: 0; }
+    .section-tag { margin-bottom: 2px; }
+    table th { padding: 6px 9px; }
+    table td { padding: 6px 9px; }
+    .table-wrap { margin-top: 2px; }
+    .filters { gap: 10px; margin-bottom: 10px; }
+    .field-label { margin-bottom: 3px; }
+    .control { height: 36px; padding: 6px 10px; }
+    select.control { height: 36px; }
+    textarea.control { min-height: 68px; }
+    .stat-card { padding: 10px 12px; }
+    .stat-card strong { font-size: 1.32rem; }
+    .list-item { padding: 7px 10px; }
+    .list-group { gap: 7px; }
+    .subtle-box { padding: 9px 11px; margin-top: 8px; }
+    .subtle-box ul { margin: 5px 0 0; }
+    .subtle-box li { margin-bottom: 2px; }
+    .timeline { gap: 6px; }
+    .timeline-item { padding-bottom: 6px; }
+    .timeline-item p { font-size: .82rem; line-height: 1.42; margin: 2px 0 0; }
+    .timeline-meta { font-size: .74rem; margin-top: 2px; }
+    .timeline-mark { width: 30px; height: 30px; }
+    .hero-panel { padding: 13px 16px; }
+    .hero-panel h3 { font-size: 1.14rem; margin-bottom: 4px; }
+    .hero-panel p { font-size: .84rem; line-height: 1.45; }
+    .hero-meta { margin-top: 9px; gap: 14px; }
+    .hero-meta strong { font-size: .98rem; }
+    .table-toolbar { margin-top: 8px !important; }
+    .footer { padding: 6px 0 0; font-size: .73rem; }
+    .wizard-panel { margin-top: 12px !important; }
+    .step-grid { gap: 9px; }
+    /* ---- Sidebar dirampingkan agar seluruh menu muat tanpa digulir ---- */
+    .sidebar { padding: 10px 9px; overflow: hidden; }
+    .brand { padding: 2px 3px 8px; min-height: 40px; gap: 9px; }
+    .menu { gap: 1px; }
+    .menu-link { padding: 6px 10px; font-size: .8rem; gap: 10px; }
+    .menu-label { margin: 6px 0 3px; }
+    .sidebar-footer { gap: 6px; padding-top: 8px; }
+    .status-card { padding: 7px 9px; }
+    .logout-button { padding: 7px 10px; font-size: .79rem; }
+
+    /* Kartu laporan dan daftar akun dirapatkan agar kedua halamannya muat. */
+    .report-grid { gap: 9px; }
+    .report-card { padding: 11px 12px; }
+    .report-card p { font-size: .8rem; line-height: 1.4; margin: 3px 0 8px; }
+    .setting-card { padding: 10px 11px; }
+
 </style>

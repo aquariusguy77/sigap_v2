@@ -74,7 +74,7 @@
 
                 <footer class="footer">
                     <strong>SIGAP</strong> — Sistem Informasi &amp; Gerakan Administratif Pengungsi
-                    &bull; Rumah Detensi Imigrasi Surabaya &bull; {{ now()->format('Y') }}
+                    • Rumah Detensi Imigrasi Surabaya • {{ now()->format('Y') }}
                 </footer>
             </div>
         </main>

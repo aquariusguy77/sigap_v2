@@ -15,42 +15,7 @@
 @endphp
 
 @section('content')
-    <section class="hero-panel section-anchor" id="dashboard">
-        <div class="hero-copy">
-            <span class="eyebrow">
-                <x-icon name="shield" class="chip-icon" />
-                Rudenim Surabaya
-            </span>
-            <h3>Selamat datang, {{ $currentUser['name'] }}</h3>
-            <p>
-                Pantau pendataan pengungsi luar negeri di wilayah kerja Rumah Detensi Imigrasi Surabaya
-                dalam satu tampilan ringkas.
-            </p>
-            <div class="hero-meta">
-                @foreach ($stats as $stat)
-                    <div>
-                        <strong>{{ $stat['value'] }}</strong>
-                        <span>{{ strtolower($stat['label']) }}</span>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div class="hero-side">
-            <div class="highlight-card">
-                <div class="highlight-head">
-                    <strong>Perlu tindak lanjut</strong>
-                    <span class="mini-badge warn">{{ $stats[2]['value'] ?? 0 }} berkas</span>
-                </div>
-                <p>Dokumen yang menunggu pemeriksaan supervisor sebelum data dinyatakan lengkap.</p>
-            </div>
-            @if ($canManageRefugees)
-                <a class="btn btn-gold" href="{{ route('refugees.create') }}" style="justify-content:center;">
-                    <x-icon name="plus" class="chip-icon" /> Tambah Data Pengungsi
-                </a>
-            @endif
-        </div>
-    </section>
+    {{-- Panel sapaan dihapus: nama dan peran pengguna sudah tampil di topbar dan sidebar. --}}
 
     <section class="dashboard-grid" aria-label="Ringkasan statistik">
         @foreach ($stats as $stat)
@@ -151,7 +116,7 @@
                             <div>
                                 <strong>{{ $item['title'] }}</strong>
                                 <p>{{ $item['detail'] }}</p>
-                                <div class="timeline-meta">{{ $item['actor'] }} &bull; {{ $item['time'] }}</div>
+                                <div class="timeline-meta">{{ $item['actor'] }} • {{ $item['time'] }}</div>
                             </div>
                         </article>
                     @empty
