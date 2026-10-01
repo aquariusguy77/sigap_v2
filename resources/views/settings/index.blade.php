@@ -4,24 +4,14 @@
     <section class="panel section-anchor" id="hak-akses">
         <div class="section-head">
             <div>
-                <span class="section-tag"><x-icon name="shield" class="chip-icon" />Hak Akses</span>
-                <h3>Akun dan kewenangan</h3>
-                <p class="section-intro">
-                    Baca-saja. Penambahan akun lewat <code>php artisan sigap:seed</code>; daftar acuan diatur di <code>config/sigap.php</code>.
-                </p>
-            </div>
-            <span class="badge">Peran aktif: {{ $currentRole['label'] }}</span>
-        </div>
-    </section>
-
-    <section class="panel" style="margin-top:14px;">
-        <div class="section-head">
-            <div>
                 <span class="section-tag"><x-icon name="users" class="chip-icon" />Akun Pengguna</span>
                 <h3>Daftar akun terdaftar</h3>
                 <p class="section-intro">Akun tersimpan di Firebase. Kata sandi disimpan dalam bentuk hash dan tidak pernah ditampilkan.</p>
             </div>
-            <span class="badge">{{ $accounts->count() }} akun</span>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="badge">Peran aktif: {{ $currentRole['label'] }}</span>
+                <span class="badge">{{ $accounts->count() }} akun</span>
+            </div>
         </div>
 
         <div class="table-wrap">

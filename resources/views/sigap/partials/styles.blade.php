@@ -193,7 +193,7 @@
     .user-chip small{display:block;color:var(--muted);font-size:.68rem}
 
     /* ============ PAGE BODY ============ */
-    .page-body{padding:10px 16px 8px;flex:1 1 auto}
+    .page-body{padding:9px 16px 4px;flex:1 1 auto}
 
     /* ============ HERO ============ */
     .hero-panel{
@@ -230,6 +230,7 @@
     .highlight-card .mini-badge{background:rgba(255,255,255,.18);color:#fff}
 
     /* ============ GRIDS ============ */
+    .dashboard-grid { gap: 9px; }
     .dashboard-grid,.content-grid,.triple-grid,.double-grid{display:grid;gap:14px;margin-top:14px}
     .dashboard-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
     .content-grid{grid-template-columns:minmax(0,1.5fr) minmax(280px,.9fr);align-items:start}
@@ -503,8 +504,8 @@
     .control { height: 36px; padding: 6px 10px; }
     select.control { height: 36px; }
     textarea.control { min-height: 68px; }
-    .stat-card { padding: 10px 12px; }
-    .stat-card strong { font-size: 1.32rem; }
+    .stat-card { padding: 9px 11px; }
+    .stat-card strong { font-size: 1.26rem; }
     .list-item { padding: 7px 10px; }
     .list-group { gap: 7px; }
     .subtle-box { padding: 9px 11px; margin-top: 8px; }
@@ -521,23 +522,36 @@
     .hero-meta { margin-top: 9px; gap: 14px; }
     .hero-meta strong { font-size: .98rem; }
     .table-toolbar { margin-top: 8px !important; }
-    .footer { padding: 6px 0 0; font-size: .73rem; }
+    .footer { padding: 4px 0 0; font-size: .72rem; }
     .wizard-panel { margin-top: 12px !important; }
     .step-grid { gap: 9px; }
     /* ---- Sidebar dirampingkan agar seluruh menu muat tanpa digulir ---- */
     .sidebar { padding: 10px 9px; overflow: hidden; }
-    .brand { padding: 2px 3px 8px; min-height: 40px; gap: 9px; }
+    .brand { padding: 3px 3px 9px; min-height: 42px; gap: 10px; }
     .menu { gap: 1px; }
-    .menu-link { padding: 6px 10px; font-size: .8rem; gap: 10px; }
+    /*
+        Ukuran tulisan menu dikembalikan seperti semula. Skala dasar halaman
+        turun dari 15px ke 14px, jadi .83rem yang lama setara .89rem sekarang.
+        Yang tetap dirapatkan hanya jarak antarbaris, bukan hurufnya.
+    */
+    .menu-link { padding: 7px 11px; font-size: .89rem; gap: 10px; }
+    .menu-icon { width: 18px; height: 18px; flex: 0 0 18px; }
     .menu-label { margin: 6px 0 3px; }
     .sidebar-footer { gap: 6px; padding-top: 8px; }
     .status-card { padding: 7px 9px; }
-    .logout-button { padding: 7px 10px; font-size: .79rem; }
+    .logout-button { padding: 8px 11px; font-size: .86rem; }
 
     /* Kartu laporan dan daftar akun dirapatkan agar kedua halamannya muat. */
-    .report-grid { gap: 9px; }
+    /*
+        Lima kartu laporan dalam dua kolom memakan tiga baris. Dengan tiga
+        kolom cukup dua baris, dan halamannya muat satu layar.
+    */
+    .report-grid { gap: 9px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .report-card { padding: 11px 12px; }
     .report-card p { font-size: .8rem; line-height: 1.4; margin: 3px 0 8px; }
     .setting-card { padding: 10px 11px; }
+
+    /* Sisa satu piksel di dasbor; jarak antarkartu statistik dirapatkan. */
+    .dashboard-grid { gap: 9px; }
 
 </style>
