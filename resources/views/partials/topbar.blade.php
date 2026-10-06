@@ -26,12 +26,27 @@
             </form>
         @endif
 
-        <div class="user-chip">
-            <div class="avatar">{{ $initials !== '' ? $initials : 'TM' }}</div>
-            <div class="user-chip-text">
-                <strong>{{ $currentUser['name'] }}</strong>
-                <small>{{ $isSignedIn ? $currentRole['label'] : 'Belum masuk' }}</small>
+        {{--
+            Kartu identitas sekaligus jalan menuju halaman ganti kata sandi.
+            Tempat itu yang pertama dicari orang ketika hendak mengurus akunnya
+            sendiri. Saat belum masuk, kartu ini tetap berupa teks biasa.
+        --}}
+        @if ($isSignedIn)
+            <a class="user-chip" href="{{ route('account.password.edit') }}" title="Kelola kata sandi akun">
+                <div class="avatar">{{ $initials !== '' ? $initials : 'TM' }}</div>
+                <div class="user-chip-text">
+                    <strong>{{ $currentUser['name'] }}</strong>
+                    <small>{{ $currentRole['label'] }}</small>
+                </div>
+            </a>
+        @else
+            <div class="user-chip">
+                <div class="avatar">{{ $initials !== '' ? $initials : 'TM' }}</div>
+                <div class="user-chip-text">
+                    <strong>{{ $currentUser['name'] }}</strong>
+                    <small>Belum masuk</small>
+                </div>
             </div>
-        </div>
+        @endif
     </div>
 </header>

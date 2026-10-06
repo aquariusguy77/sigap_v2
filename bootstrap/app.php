@@ -17,6 +17,24 @@ return Application::configure(basePath: dirname(__DIR__))
             'sigap.auth' => EnsureSigapAuthenticated::class,
             'sigap.ability' => EnsureSigapAbility::class,
         ]);
+
+        /*
+         * Aplikasi berjalan di belakang edge Vercel, jadi alamat pengirim yang
+         * dilihat PHP selalu alamat edge itu — sama untuk semua pengunjung.
+         * Alamat asli pengunjung ada pada tajuk X-Forwarded-For, dan tajuk itu
+         * baru dipercaya Laravel setelah proxy-nya didaftarkan di sini.
+         *
+         * Tanpa baris ini pembatas percobaan masuk kehilangan kemampuan
+         * membedakan satu pengunjung dari pengunjung lain.
+         *
+         * Alamat proxy Vercel tidak tetap sehingga tidak dapat didaftarkan
+         * satu per satu. Itu aman di sini karena seluruh permintaan wajib
+         * melewati edge Vercel, dan edge menimpa X-Forwarded-For dengan alamat
+         * sambungan yang sebenarnya. Meski begitu, pembatas percobaan masuk
+         * tetap tidak bergantung pada alamat IP semata — lihat
+         * LoginThrottleService.
+         */
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

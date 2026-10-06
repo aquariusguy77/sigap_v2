@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\LoginThrottleService;
 use App\Services\RoleAccessService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
@@ -11,7 +12,8 @@ use Illuminate\View\View;
 class AuthController extends Controller
 {
     public function __construct(
-        protected RoleAccessService $roleAccessService
+        protected RoleAccessService $roleAccessService,
+        protected LoginThrottleService $loginThrottle
     ) {
     }
 
@@ -33,6 +35,10 @@ class AuthController extends Controller
      * sebagai Admin lalu menghapus data. Satu-satunya jalan masuk sekarang
      * adalah akun terdaftar yang kata sandinya diperiksa terhadap hash bcrypt
      * di Firebase.
+     *
+     * Jumlah percobaan dibatasi oleh LoginThrottleService, yang menyimpan
+     * hitungannya di Firebase. Tanpa itu halaman ini dapat dipakai menebak
+     * kata sandi tanpa batas.
      */
     public function login(Request $request): RedirectResponse
     {
@@ -44,7 +50,23 @@ class AuthController extends Controller
             'password' => 'kata sandi',
         ]);
 
+        $alamat = $request->ip();
+
+        /*
+         * Diperiksa sebelum kata sandi diuji, supaya percobaan yang sedang
+         * terkunci tidak menambah beban pembacaan akun ke Firebase.
+         */
+        $terkunci = $this->loginThrottle->lockedFor($validated['email'], $alamat);
+
+        if ($terkunci > 0) {
+            return back()
+                ->withErrors(['email' => $this->loginThrottle->message($terkunci)])
+                ->withInput($request->except('password'));
+        }
+
         if (! Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']])) {
+            $this->loginThrottle->recordFailure($validated['email'], $alamat);
+
             /*
              * Sengaja tidak membedakan "email tidak terdaftar" dari "kata sandi
              * salah", agar halaman ini tidak dapat dipakai menebak email mana
@@ -54,6 +76,8 @@ class AuthController extends Controller
                 ->withErrors(['email' => 'Email atau kata sandi tidak cocok.'])
                 ->withInput($request->except('password'));
         }
+
+        $this->loginThrottle->clear($validated['email'], $alamat);
 
         $request->session()->regenerate();
 

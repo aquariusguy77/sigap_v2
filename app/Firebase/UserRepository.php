@@ -15,6 +15,13 @@ class UserRepository extends Repository
         'role',
         'status',
         'remember_token',
+
+        /*
+         * Kapan kata sandi terakhir diganti. Hanya waktunya yang dicatat —
+         * kata sandinya sendiri, baik yang lama maupun yang baru, tidak pernah
+         * disimpan dalam bentuk terbaca.
+         */
+        'password_changed_at',
     ];
 
     protected string $sortBy = 'name';

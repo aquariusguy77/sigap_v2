@@ -554,4 +554,70 @@
     /* Sisa satu piksel di dasbor; jarak antarkartu statistik dirapatkan. */
     .dashboard-grid { gap: 9px; }
 
+    /* ---- Kolom kata sandi dengan tombol tampilkan ---------------------- */
+
+    .field-reveal { position: relative; }
+    .field-reveal .control { padding-right: 42px; }
+
+    .field-eye {
+        position: absolute;
+        top: 50%;
+        right: 5px;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+    }
+
+    .field-eye:hover { background: var(--surface-soft); color: var(--tosca); }
+    .field-eye svg { width: 17px; height: 17px; }
+
+    /* ---- Bagian terlipat: atur ulang kata sandi ------------------------- */
+
+    .reset-sandi {
+        margin-top: 14px;
+        padding-top: 13px;
+        border-top: 1px solid var(--line);
+    }
+
+    .reset-sandi > summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: .87rem;
+        font-weight: 600;
+        color: var(--tosca-deep);
+        list-style: none;
+    }
+
+    .reset-sandi > summary::-webkit-details-marker { display: none; }
+    .reset-sandi > summary:hover { color: var(--tosca); }
+    .reset-sandi[open] > summary { margin-bottom: 2px; }
+
+    /*
+        Kartu identitas di topbar kini berupa tautan ke halaman ganti kata
+        sandi. Warna dan garis bawah bawaan tautan dimatikan agar bentuknya
+        tidak berubah dari sebelumnya.
+    */
+    a.user-chip { text-decoration: none; color: inherit; }
+    a.user-chip:hover { border-color: var(--tosca); background: #eef7f9; }
+
+    /*
+        Jarak di atas kaki halaman dirapatkan. Setiap halaman sebelumnya pas
+        tepat 768px tanpa sisa sama sekali, sehingga penambahan sekecil apa pun
+        langsung memaksa penggulungan. Delapan piksel ini menjadi kelonggaran
+        bersama untuk semua halaman.
+    */
+    .footer { margin-top: 12px; }
+
+    /* Bagian atur ulang kata sandi dirapatkan agar Hak Akses tetap satu layar. */
+    .reset-sandi { margin-top: 9px; padding-top: 9px; }
+
 </style>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
@@ -46,4 +47,14 @@ Route::middleware(EnsureSigapAuthenticated::class)->group(function (): void {
     Route::get('/laporan/{report}/unduh/csv', [ReportController::class, 'exportCsv'])->middleware(EnsureSigapAbility::class . ':view-reports')->name('reports.export.csv');
     Route::get('/laporan/{report}/unduh/pdf', [ReportController::class, 'exportPdf'])->middleware(EnsureSigapAbility::class . ':view-reports')->name('reports.export.pdf');
     Route::get('/pengaturan', [SettingController::class, 'index'])->middleware(EnsureSigapAbility::class . ':manage-settings')->name('settings.index');
+    Route::put('/pengaturan/akun/{user}/kata-sandi', [SettingController::class, 'resetPassword'])->middleware(EnsureSigapAbility::class . ':manage-settings')->name('settings.password.reset');
+
+    /*
+     * Mengganti kata sandi sendiri tidak diberi penjaga kewenangan: setiap
+     * peran wajib bisa melakukannya. Yang dijaga adalah isinya — kata sandi
+     * saat ini harus dimasukkan ulang, dan yang diubah hanya akun yang sedang
+     * masuk.
+     */
+    Route::get('/akun/kata-sandi', [AccountController::class, 'editPassword'])->name('account.password.edit');
+    Route::put('/akun/kata-sandi', [AccountController::class, 'updatePassword'])->name('account.password.update');
 });

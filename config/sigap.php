@@ -141,7 +141,66 @@ return [
             'audit_trails' => '/audit_trails',
             'reports' => '/reports',
             'users' => '/users',
+            'login_attempts' => '/login_attempts',
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pembatas percobaan masuk
+    |--------------------------------------------------------------------------
+    |
+    | Hitungannya disimpan di Firebase pada node login_attempts, bukan di cache
+    | Laravel. Di Vercel setiap permintaan berdiri sendiri dan CACHE_STORE
+    | bernilai "array", yang hanya hidup selama satu permintaan — middleware
+    | throttle bawaan tidak akan membatasi apa pun di sana.
+    |
+    | window dan lock dalam detik.
+    |
+    |   per_account : satu akun dari satu alamat IP. Batas utama.
+    |   per_email   : satu akun dari alamat mana pun. Jaring kedua, ambangnya
+    |                 lebih tinggi supaya akun tidak mudah dikunci dengan
+    |                 sengaja oleh orang lain.
+    |
+    | prune_chance : satu dari sekian pencatatan kegagalan dipakai sekalian
+    |                untuk membersihkan catatan yang sudah kedaluwarsa. Isi 1
+    |                agar selalu bersih-bersih, atau 0 untuk mematikannya.
+    |
+    */
+    'login_throttle' => [
+        'enabled' => filter_var(env('SIGAP_LOGIN_THROTTLE', true), FILTER_VALIDATE_BOOLEAN),
+
+        'per_account' => [
+            'max' => (int) env('SIGAP_LOGIN_THROTTLE_MAX', 5),
+            'window' => (int) env('SIGAP_LOGIN_THROTTLE_WINDOW', 900),
+            'lock' => (int) env('SIGAP_LOGIN_THROTTLE_LOCK', 900),
+        ],
+
+        'per_email' => [
+            'max' => (int) env('SIGAP_LOGIN_THROTTLE_EMAIL_MAX', 20),
+            'window' => (int) env('SIGAP_LOGIN_THROTTLE_EMAIL_WINDOW', 900),
+            'lock' => (int) env('SIGAP_LOGIN_THROTTLE_EMAIL_LOCK', 1800),
+        ],
+
+        'prune_chance' => (int) env('SIGAP_LOGIN_THROTTLE_PRUNE_CHANCE', 20),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Syarat kata sandi
+    |--------------------------------------------------------------------------
+    |
+    | Hanya panjang minimalnya yang diatur, tanpa kewajiban mencampur huruf
+    | besar, angka, dan tanda baca. Syarat campuran semacam itu cenderung
+    | menghasilkan kata sandi pendek yang mudah ditebak mesin namun sulit
+    | diingat orang, sementara panjang menambah kekuatan jauh lebih banyak.
+    |
+    | Batas atasnya tidak dapat disetel: bcrypt hanya memperhitungkan 72 bita
+    | pertama, jadi 72 selalu menjadi batas maksimal.
+    |
+    */
+    'password' => [
+        'minimum' => (int) env('SIGAP_PASSWORD_MINIMUM', 12),
     ],
 
 ];

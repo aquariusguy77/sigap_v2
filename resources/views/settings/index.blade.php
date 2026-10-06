@@ -22,6 +22,7 @@
                         <th>Email</th>
                         <th>Peran</th>
                         <th>Status</th>
+                        <th>Kata Sandi Diubah</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,17 +32,95 @@
                             <td class="table-meta">{{ $account->email }}</td>
                             <td><span class="badge">{{ $roles[$account->role]['label'] ?? $account->role }}</span></td>
                             <td><span class="badge success">{{ $account->status }}</span></td>
+                            <td class="table-meta">
+                                @if (filled($account->password_changed_at))
+                                    {{ \Illuminate\Support\Carbon::parse($account->password_changed_at)->translatedFormat('d M Y') }}
+                                @else
+                                    Belum pernah
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="empty-row">
-                                Belum ada akun. Jalankan perintah <code>php artisan sigap:seed</code> untuk membuat akun awal.
+                            <td colspan="5" class="empty-row">
+                                Daftar akun belum dapat ditampilkan. Hubungi Admin sistem.
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
+        {{--
+            Pengaturan ulang kata sandi diletakkan di sini, terlipat.
+
+            Sistem ini tidak mengirim surel, jadi tidak ada tautan "lupa kata
+            sandi" yang dapat dikirim kepada petugas — padahal halaman masuk
+            mengarahkan mereka menghubungi Admin. Tanpa bagian ini, arahan itu
+            tidak dapat ditindaklanjuti.
+
+            Dibuat terlipat agar tidak menambah tinggi halaman saat tidak
+            dipakai, dan agar tidak terpakai karena salah klik.
+        --}}
+        <details class="reset-sandi">
+            <summary>
+                <x-icon name="shield" class="chip-icon" />
+                Atur ulang kata sandi sebuah akun
+            </summary>
+
+            <form method="POST" action="" id="formResetSandi" autocomplete="off" style="margin-top:14px;">
+                @csrf
+                @method('PUT')
+
+                <div class="double-grid" style="margin-top:0;">
+                    <div>
+                        <label class="table-meta" for="resetAkun">Akun</label>
+                        <select class="control" id="resetAkun" required>
+                            <option value="">Pilih akun…</option>
+                            @foreach ($accounts as $account)
+                                <option value="{{ route('settings.password.reset', $account->id) }}">
+                                    {{ $account->name }} — {{ $account->email }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="table-meta" for="resetSandi">Kata Sandi Baru</label>
+                        <input class="control" type="password" name="password" id="resetSandi"
+                               autocomplete="new-password" placeholder="Minimal {{ $minimum }} karakter"
+                               minlength="{{ $minimum }}" maxlength="72" required>
+                    </div>
+                    <div>
+                        <label class="table-meta" for="resetSandiUlang">Ulangi Kata Sandi Baru</label>
+                        <input class="control" type="password" name="password_confirmation" id="resetSandiUlang"
+                               autocomplete="new-password" placeholder="Ketik ulang kata sandi baru"
+                               minlength="{{ $minimum }}" maxlength="72" required>
+                    </div>
+                </div>
+
+                <p class="table-meta" style="margin-top:12px;">
+                    Kata sandi baru tidak dapat dibaca kembali setelah disimpan. Sampaikan
+                    langsung kepada pemilik akun, dan minta ia menggantinya sendiri lewat
+                    menu Ganti Kata Sandi. Penguncian akibat percobaan masuk yang gagal
+                    ikut dilepas.
+                </p>
+
+                <button class="btn btn-primary" type="submit" style="margin-top:14px;">
+                    <x-icon name="check" class="chip-icon" /> Simpan Kata Sandi Baru
+                </button>
+            </form>
+
+            <script>
+                // Tujuan formulir mengikuti akun yang dipilih, sehingga id akun
+                // tidak perlu dikirim sebagai isian yang dapat diubah-ubah.
+                (() => {
+                    const form = document.getElementById('formResetSandi');
+                    const pilihan = document.getElementById('resetAkun');
+
+                    pilihan?.addEventListener('change', () => { form.action = pilihan.value; });
+                })();
+            </script>
+        </details>
     </section>
 
     <section class="double-grid">
