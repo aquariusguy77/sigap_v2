@@ -38,20 +38,14 @@
 
     <div class="sidebar-footer">
         @if ($isSignedIn)
-            <div class="status-card">
-                <strong>Peran aktif</strong>
-                <p class="status-note"><b>{{ $currentRole['label'] }}</b></p>
-            </div>
             {{--
-                Ganti kata sandi ditaruh di kaki sidebar, bukan di daftar menu
-                utama, supaya daftar menu tetap muat satu layar tanpa digulir.
+                Kaki sidebar sengaja hanya berisi tombol Keluar.
+
+                Kartu "Peran aktif" dihapus karena peran yang sedang dipakai
+                sudah tertulis di kartu nama pada topbar, tepat di bawah nama
+                pengguna. Jalan menuju halaman ganti kata sandi juga lewat
+                kartu itu.
             --}}
-            <a class="logout-button {{ request()->routeIs('account.password.*') ? 'active' : '' }}"
-               href="{{ route('account.password.edit') }}" title="Ganti kata sandi"
-               style="color:#cfeaef;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);margin-bottom:7px;">
-                <x-icon name="shield" class="menu-icon" />
-                <span>Ganti Kata Sandi</span>
-            </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="logout-button" type="submit" title="Keluar">

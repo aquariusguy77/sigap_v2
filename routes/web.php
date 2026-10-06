@@ -50,11 +50,14 @@ Route::middleware(EnsureSigapAuthenticated::class)->group(function (): void {
     Route::put('/pengaturan/akun/{user}/kata-sandi', [SettingController::class, 'resetPassword'])->middleware(EnsureSigapAbility::class . ':manage-settings')->name('settings.password.reset');
 
     /*
-     * Mengganti kata sandi sendiri tidak diberi penjaga kewenangan: setiap
-     * peran wajib bisa melakukannya. Yang dijaga adalah isinya — kata sandi
-     * saat ini harus dimasukkan ulang, dan yang diubah hanya akun yang sedang
-     * masuk.
+     * Pengurusan akun dipusatkan pada Admin.
+     *
+     * Halaman ini mengubah kata sandi akun yang sedang masuk dan tetap
+     * meminta kata sandi lama, tetapi kewenangannya disamakan dengan
+     * pengurusan akun lainnya: hanya peran yang memegang manage-settings.
+     * Petugas dan Supervisor yang perlu mengganti kata sandi meminta Admin
+     * mengaturnya ulang dari halaman Hak Akses.
      */
-    Route::get('/akun/kata-sandi', [AccountController::class, 'editPassword'])->name('account.password.edit');
-    Route::put('/akun/kata-sandi', [AccountController::class, 'updatePassword'])->name('account.password.update');
+    Route::get('/akun/kata-sandi', [AccountController::class, 'editPassword'])->middleware(EnsureSigapAbility::class . ':manage-settings')->name('account.password.edit');
+    Route::put('/akun/kata-sandi', [AccountController::class, 'updatePassword'])->middleware(EnsureSigapAbility::class . ':manage-settings')->name('account.password.update');
 });

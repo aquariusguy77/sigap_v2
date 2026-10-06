@@ -86,11 +86,14 @@
                     </p>
                 </article>
                 <article class="list-item">
-                    <strong>Kata sandi tidak dapat dikirim ulang</strong>
+                    <strong>Tidak ada pemulihan dari dalam aplikasi</strong>
                     <p>
                         Sistem ini tidak mengirim surel, jadi tidak ada tautan "lupa kata
-                        sandi". Bila kata sandi hilang, hanya Admin yang dapat mengaturnya
-                        ulang dari halaman Hak Akses.
+                        sandi". Kata sandi akun lain dapat Anda atur ulang dari halaman
+                        Hak Akses — tetapi bila kata sandi Anda sendiri yang hilang, tidak
+                        ada seorang pun di dalam aplikasi yang dapat memulihkannya.
+                        Pemulihannya harus lewat Firebase Console. Catat kata sandi baru
+                        di tempat yang aman sebelum menyimpannya.
                     </p>
                 </article>
                 <article class="list-item">

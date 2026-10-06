@@ -31,6 +31,8 @@ class AccountController extends Controller
 
     public function editPassword(): View
     {
+        $this->ensureAbility('manage-settings');
+
         return view('account.password', array_merge($this->baseViewData(), [
             'pageHeading' => 'Ganti Kata Sandi',
             'pageDescription' => 'Mengubah kata sandi akun Anda sendiri.',
@@ -40,6 +42,8 @@ class AccountController extends Controller
 
     public function updatePassword(Request $request): RedirectResponse
     {
+        $this->ensureAbility('manage-settings');
+
         $minimum = $this->minimum();
 
         $validated = $request->validate([
