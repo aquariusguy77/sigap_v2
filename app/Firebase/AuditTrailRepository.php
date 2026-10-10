@@ -3,6 +3,7 @@
 namespace App\Firebase;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class AuditTrailRepository extends Repository
@@ -21,6 +22,42 @@ class AuditTrailRepository extends Repository
     ];
 
     protected string $sortBy = 'performed_at';
+
+    /**
+     * Sejumlah catatan terakhir saja.
+     *
+     * Dibedakan dari all()->take($n) karena yang membatasi di sini adalah
+     * Firebase, bukan PHP. Pada node dengan 3.000 catatan, all()->take(3)
+     * tetap mengunduh ketiga ribunya lebih dulu — sekitar 1,1 MB — hanya
+     * untuk membuang 2.997 di antaranya.
+     *
+     * Diambil sedikit lebih banyak daripada yang diminta, lalu diurutkan
+     * ulang menurut performed_at. Firebase mengurutkan menurut kunci,
+     * sedangkan urutan yang ditampilkan mengikuti waktu kejadian; keduanya
+     * hampir selalu sama karena kunci push berurut menurut waktu pembuatan,
+     * tetapi kelebihan itu menjaga urutannya tetap benar bila ada catatan
+     * yang waktunya diisi mundur.
+     */
+    public function recent(int $limit): Collection
+    {
+        $limit = max(1, $limit);
+
+        $snapshot = $this->firebase->fetchLatest(
+            $this->firebase->path($this->node),
+            min(100, $limit * 4)
+        );
+
+        if (! is_array($snapshot)) {
+            return collect();
+        }
+
+        return collect($snapshot)
+            ->map(fn ($payload, $key) => is_array($payload) ? $this->hydrate((string) $key, $payload) : null)
+            ->filter()
+            ->sortByDesc(fn (Record $record) => (string) ($record->attributes['performed_at'] ?? ''))
+            ->values()
+            ->take($limit);
+    }
 
     /**
      * Mencatat satu perubahan data.

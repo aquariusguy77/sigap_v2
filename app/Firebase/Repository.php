@@ -142,9 +142,17 @@ abstract class Repository
         }
     }
 
+    /**
+     * Jumlah isi node.
+     *
+     * Memakai penghitungan dangkal di sisi Firebase, bukan all()->count().
+     * Yang terakhir mengunduh seluruh isi node lebih dulu hanya untuk
+     * menghitungnya — pada node riwayat berisi ribuan catatan, itu megabita
+     * yang diunduh demi satu angka.
+     */
     public function count(): int
     {
-        return $this->all()->count();
+        return $this->firebase->countNode($this->firebase->path($this->node));
     }
 
     /**

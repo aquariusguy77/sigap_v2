@@ -121,11 +121,107 @@ class FirebaseRealtimeDatabaseService
         $path = '/' . trim($path, '/');
 
         foreach (array_keys($this->ingatan) as $tersimpan) {
-            $t = '/' . trim((string) $tersimpan, '/');
+            /*
+             * Kunci ingatan untuk pengambilan terbatas memuat embel-embel
+             * "?limitToLast=...". Embel-embel itu dibuang lebih dulu supaya
+             * hasil terbatas sebuah node ikut terlupakan saat node itu
+             * berubah.
+             */
+            $bersih = explode('?', (string) $tersimpan, 2)[0];
+            $t = '/' . trim($bersih, '/');
 
             if ($t === $path || str_starts_with($t, $path . '/') || str_starts_with($path, $t . '/')) {
                 unset($this->ingatan[$tersimpan]);
             }
+        }
+    }
+
+    /**
+     * Mengambil sebagian terakhir isi sebuah node, diurutkan menurut kuncinya.
+     *
+     * Dipakai untuk daftar "terbaru". Tanpa ini, menampilkan tiga kegiatan
+     * terakhir berarti mengunduh seluruh node riwayat lebih dulu — pada basis
+     * data dengan 3.000 catatan, itu 1,1 MB yang diunduh hanya untuk dibuang
+     * 2.997 di antaranya.
+     *
+     * Pengurutan sengaja memakai "$key", bukan kolom waktu. Firebase menolak
+     * orderBy pada kolom yang belum didaftarkan di .indexOn dengan galat,
+     * sedangkan kunci selalu terindeks dengan sendirinya — sehingga perubahan
+     * ini tidak menuntut penyuntingan aturan keamanan sama sekali.
+     *
+     * Kunci yang dibuat Firebase lewat push berurut menurut waktu pembuatan,
+     * jadi "terakhir menurut kunci" sama dengan "terbaru". Urutan akhirnya
+     * tetap ditentukan ulang oleh repositori menurut kolom waktunya sendiri.
+     */
+    public function fetchLatest(string $path, int $limit): mixed
+    {
+        if (! $this->enabled() || $limit < 1) {
+            return null;
+        }
+
+        $ingatanKunci = $path . '?limitToLast=' . $limit;
+
+        if (array_key_exists($ingatanKunci, $this->ingatan)) {
+            return $this->ingatan[$ingatanKunci];
+        }
+
+        try {
+            $response = $this->request()
+                ->withQueryParameters(['orderBy' => '"$key"', 'limitToLast' => $limit])
+                ->get($this->endpoint($path));
+
+            if ($response->failed()) {
+                $this->lastError = 'Firebase menjawab kode ' . $response->status();
+
+                return null;
+            }
+
+            return $this->ingatan[$ingatanKunci] = $response->json();
+        } catch (Throwable $e) {
+            $this->lastError = $e->getMessage();
+
+            return null;
+        }
+    }
+
+    /**
+     * Menghitung isi sebuah node tanpa mengunduh isinya.
+     *
+     * Firebase Realtime Database tidak menyediakan penghitung, tetapi
+     * parameter shallow=true membuatnya mengembalikan kunci saja — tanpa
+     * nilainya. Untuk node riwayat berisi 3.000 catatan, bedanya sekitar
+     * 1,1 MB melawan 66 KB, padahal yang dibutuhkan hanya satu angka.
+     */
+    public function countNode(string $path): int
+    {
+        if (! $this->enabled()) {
+            return 0;
+        }
+
+        $ingatanKunci = $path . '?shallow';
+
+        if (array_key_exists($ingatanKunci, $this->ingatan)) {
+            return (int) $this->ingatan[$ingatanKunci];
+        }
+
+        try {
+            $response = $this->request()
+                ->withQueryParameters(['shallow' => 'true'])
+                ->get($this->endpoint($path));
+
+            if ($response->failed()) {
+                $this->lastError = 'Firebase menjawab kode ' . $response->status();
+
+                return 0;
+            }
+
+            $isi = $response->json();
+
+            return $this->ingatan[$ingatanKunci] = is_array($isi) ? count($isi) : 0;
+        } catch (Throwable $e) {
+            $this->lastError = $e->getMessage();
+
+            return 0;
         }
     }
 

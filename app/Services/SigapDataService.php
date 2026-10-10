@@ -36,7 +36,15 @@ class SigapDataService
     {
         $refugees = $this->refugees();
         $documents = $this->documents();
-        $activities = $this->history();
+
+        /*
+         * Hanya jumlahnya yang dibutuhkan, jadi node riwayat dihitung di sisi
+         * Firebase dan tidak diunduh. Sebelumnya baris ini memanggil
+         * history(), yang menarik seluruh catatan — pada basis data dengan
+         * 3.000 riwayat itu 1,1 MB demi satu angka, dan node riwayat hanya
+         * bertambah seiring waktu.
+         */
+        $jumlahAktivitas = $this->audits->count();
 
         $active = $refugees->filter(fn (Record $item) => $item->status === 'Aktif')->count();
         $complete = $refugees->filter(fn (Record $item) => $item->document_status === 'Lengkap')->count();
@@ -68,7 +76,7 @@ class SigapDataService
             ],
             [
                 'label' => 'Catatan Aktivitas',
-                'value' => $activities->count(),
+                'value' => $jumlahAktivitas,
                 'note' => 'Perubahan data yang tercatat di log aktivitas.',
                 'icon' => 'history',
                 'tone' => 'deep',
@@ -352,9 +360,17 @@ class SigapDataService
             ->values();
     }
 
+    /**
+     * Kegiatan terakhir untuk ditampilkan di dasbor.
+     *
+     * Sengaja tidak memakai history()->take(), karena history() menarik
+     * seluruh node riwayat lebih dulu. Pada basis data dengan 3.000 catatan,
+     * itu 1,1 MB yang diunduh hanya untuk menampilkan tiga baris — dan node
+     * riwayat hanya bertambah seiring waktu, tidak pernah menyusut.
+     */
     public function recentActivities(int $limit = 6): Collection
     {
-        return $this->history()->take($limit);
+        return $this->audits->recent($limit);
     }
 
     public function reportLogs(): Collection
