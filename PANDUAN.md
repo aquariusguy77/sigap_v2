@@ -286,11 +286,32 @@ php artisan sigap:seed
 
 Perintah ini membuat tiga akun dan beberapa data contoh **sintetis** di Firebase:
 
-| Peran | Email | Kata sandi |
-|---|---|---|
-| Admin | `admin@sigap-rudenim.local` | `Sigap@Admin2026` |
-| Petugas | `petugas@sigap-rudenim.local` | `Sigap@Petugas2026` |
-| Supervisor | `supervisor@sigap-rudenim.local` | `Sigap@Supervisor2026` |
+| Peran | Email |
+|---|---|
+| Admin | `admin@sigap-rudenim.local` |
+| Petugas | `petugas@sigap-rudenim.local` |
+| Supervisor | `supervisor@sigap-rudenim.local` |
+
+**Kata sandinya tidak tertulis di dokumen ini, dan memang tidak boleh.**
+Berkas ini berada di repositori yang dapat dibaca orang lain; kata sandi yang
+tertulis di sini sama saja dengan kata sandi yang dibagikan kepada umum.
+
+Yang terjadi saat perintah dijalankan:
+
+* Bila `SIGAP_SEED_ADMIN_PASSWORD`, `SIGAP_SEED_PETUGAS_PASSWORD`, dan
+  `SIGAP_SEED_SUPERVISOR_PASSWORD` diisi di `.env`, nilai itulah yang dipakai.
+* Bila dikosongkan, kata sandi acak dibuatkan dan **ditampilkan sekali saja**
+  di layar. Catat saat itu juga.
+* Akun yang sudah ada tidak diganggu — menjalankan ulang perintah ini tidak
+  akan mengubah kata sandi yang sedang dipakai.
+
+Sesudah masuk, setiap petugas dapat menggantinya sendiri lewat menu **Ganti
+Kata Sandi**, dan Admin dapat mengatur ulang kata sandi akun lain dari halaman
+**Hak Akses**.
+
+> Kata sandi `Sigap@Admin2026` dan sejenisnya berasal dari rancangan lama yang
+> masih memakai basis data relasional, dan **sudah tidak berlaku**. Bila masih
+> ditemukan tertulis di berkas lain, hapus — bukan diperbarui.
 
 **Cara memeriksa:** buka Firebase Console → Realtime Database. Seharusnya sudah
 muncul node `users`, `refugees`, `placements`, `documents`, dan `audit_trails`.

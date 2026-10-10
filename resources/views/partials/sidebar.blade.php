@@ -1,7 +1,7 @@
 <aside class="sidebar" id="sidebar">
     <div class="brand">
         <div class="brand-mark">
-            <img src="{{ config('branding.logo') }}" alt="{{ config('branding.logo_alt') }}" width="128" height="142">
+            <img src="{{ config('branding.logo_url') . '?v=' . config('branding.asset_version') }}" alt="{{ config('branding.logo_alt') }}" width="128" height="142">
         </div>
         <div class="brand-text">
             <h1>SIGAP</h1>

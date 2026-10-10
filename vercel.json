@@ -12,7 +12,10 @@
     "routes": [
         {
             "src": "/(css|js|images|fonts|build)/(.*)",
-            "dest": "/public/$1/$2"
+            "dest": "/public/$1/$2",
+            "headers": {
+                "Cache-Control": "public, max-age=31536000, immutable"
+            }
         },
         {
             "src": "/robots.txt",

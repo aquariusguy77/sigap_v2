@@ -3,7 +3,7 @@
 @section('content')
 <div class="auth-stage">
     {{-- Lambang besar berkadar rendah sebagai latar. --}}
-    <img class="auth-watermark" src="{{ config('branding.logo') }}" alt="" aria-hidden="true">
+    <img class="auth-watermark" src="{{ config('branding.logo_url') . '?v=' . config('branding.asset_version') }}" alt="" aria-hidden="true">
 
     {{-- Lengkung emas dan tosca tipis, digambar sebaris agar selalu termuat. --}}
     <svg class="auth-arcs" viewBox="0 0 900 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -20,7 +20,7 @@
     <div class="auth-card">
         <div class="auth-head">
             <span class="auth-logo">
-                <img src="{{ config('branding.logo') }}" alt="{{ config('branding.logo_alt') }}">
+                <img src="{{ config('branding.logo_url') . '?v=' . config('branding.asset_version') }}" alt="{{ config('branding.logo_alt') }}">
             </span>
             <strong>SIGAP</strong>
             <span class="auth-institution">Rumah Detensi Imigrasi Surabaya</span>

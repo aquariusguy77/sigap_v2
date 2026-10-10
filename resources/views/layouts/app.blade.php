@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#0d5c6d">
     <title>{{ ($title ?? ($pageHeading ?? 'SIGAP')) }} • SIGAP Rudenim Surabaya</title>
     <meta name="description" content="SIGAP — Sistem Informasi & Gerakan Administratif Pengungsi Rudenim Surabaya.">
-    <link rel="icon" type="image/png" href="{{ config('branding.logo') }}">
-    <link rel="apple-touch-icon" href="{{ config('branding.logo') }}">
+    <link rel="icon" type="image/png" href="{{ config('branding.logo_url') . '?v=' . config('branding.asset_version') }}">
+    <link rel="apple-touch-icon" href="{{ config('branding.logo_url') . '?v=' . config('branding.asset_version') }}">
     @include('sigap.partials.styles')
 </head>
 <body>
