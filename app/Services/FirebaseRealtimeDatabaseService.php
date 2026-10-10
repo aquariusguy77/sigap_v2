@@ -55,10 +55,31 @@ class FirebaseRealtimeDatabaseService
         return $this->lastError;
     }
 
+    /**
+     * Hasil pembacaan node selama satu permintaan berlangsung.
+     *
+     * Satu halaman kerap membutuhkan node yang sama lebih dari sekali —
+     * dasbor, misalnya, membaca /refugees tiga kali untuk menghitung jumlah,
+     * menyusun ringkasan, dan menampilkan data terbaru. Tanpa ingatan ini,
+     * ketiganya menjadi tiga perjalanan ke Firebase yang mengunduh isi yang
+     * persis sama.
+     *
+     * Ingatan ini hanya hidup selama satu permintaan. Di Vercel setiap
+     * permintaan dilayani proses yang berdiri sendiri, jadi tidak ada risiko
+     * data basi terbawa ke permintaan berikutnya atau bocor ke pengguna lain.
+     *
+     * @var array<string, mixed>
+     */
+    protected array $ingatan = [];
+
     public function fetchNode(string $path): mixed
     {
         if (! $this->enabled()) {
             return null;
+        }
+
+        if (array_key_exists($path, $this->ingatan)) {
+            return $this->ingatan[$path];
         }
 
         try {
@@ -70,11 +91,41 @@ class FirebaseRealtimeDatabaseService
                 return null;
             }
 
-            return $response->json();
+            return $this->ingatan[$path] = $response->json();
         } catch (Throwable $e) {
             $this->lastError = $e->getMessage();
 
             return null;
+        }
+    }
+
+    /**
+     * Melupakan hasil pembacaan yang tersimpan.
+     *
+     * Dipanggil setiap kali ada penulisan. Yang dilupakan bukan hanya node
+     * yang ditulis, melainkan juga seluruh induknya — menulis ke
+     * /refugees/abc membuat isi /refugees yang tersimpan ikut usang — dan
+     * seluruh turunannya.
+     *
+     * Tanpa ini, menyimpan data lalu membacanya kembali dalam permintaan yang
+     * sama akan mengembalikan keadaan sebelum penyimpanan.
+     */
+    public function lupakan(?string $path = null): void
+    {
+        if ($path === null) {
+            $this->ingatan = [];
+
+            return;
+        }
+
+        $path = '/' . trim($path, '/');
+
+        foreach (array_keys($this->ingatan) as $tersimpan) {
+            $t = '/' . trim((string) $tersimpan, '/');
+
+            if ($t === $path || str_starts_with($t, $path . '/') || str_starts_with($path, $t . '/')) {
+                unset($this->ingatan[$tersimpan]);
+            }
         }
     }
 
@@ -121,6 +172,8 @@ class FirebaseRealtimeDatabaseService
 
                 return null;
             }
+
+            $this->lupakan($this->path($node));
 
             return $response->json('name');
         } catch (Throwable $e) {
@@ -213,6 +266,8 @@ class FirebaseRealtimeDatabaseService
 
                 return false;
             }
+
+            $this->lupakan($path);
 
             return true;
         } catch (Throwable $e) {
