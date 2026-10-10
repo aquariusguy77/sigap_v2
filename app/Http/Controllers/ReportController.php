@@ -115,7 +115,7 @@ class ReportController extends Controller
         foreach ($this->reportExport->definitions() as $key => $definition) {
             $cards[] = array_merge($definition, [
                 'key' => $key,
-                'count' => $this->reportExport->rows($key)->count(),
+                'count' => $this->reportExport->countFor($key),
                 'csv_url' => route('reports.export.csv', $key),
                 'pdf_url' => route('reports.export.pdf', $key),
             ]);

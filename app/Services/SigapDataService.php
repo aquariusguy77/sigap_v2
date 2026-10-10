@@ -353,6 +353,33 @@ class SigapDataService
         return $this->audits->all();
     }
 
+    /**
+     * Sejumlah catatan riwayat terakhir, tanpa mengunduh seluruh node.
+     */
+    public function recentHistory(int $limit): Collection
+    {
+        return $this->audits->recent($limit);
+    }
+
+    /**
+     * Jumlah isi tiap node, dihitung di sisi Firebase.
+     *
+     * Dipakai di tempat-tempat yang hanya memerlukan angkanya — kartu
+     * statistik dasbor dan kartu laporan — supaya isinya tidak perlu
+     * diunduh lebih dulu.
+     */
+    public function countOf(string $node): int
+    {
+        return match ($node) {
+            'refugees' => $this->refugees->count(),
+            'placements' => $this->placements->count(),
+            'documents' => $this->documents->count(),
+            'history' => $this->audits->count(),
+            'report_logs' => $this->reportLogs->count(),
+            default => 0,
+        };
+    }
+
     public function historyForRefugee(string $refugeeId): Collection
     {
         return $this->history()
@@ -375,7 +402,7 @@ class SigapDataService
 
     public function reportLogs(): Collection
     {
-        return $this->reportLogs->all()->take(20)->map(fn (Record $log) => [
+        return $this->reportLogs->recent(20)->map(fn (Record $log) => [
             'type' => $log->type,
             'filters' => $log->filters ?? '-',
             'format' => $log->format ?? 'CSV',

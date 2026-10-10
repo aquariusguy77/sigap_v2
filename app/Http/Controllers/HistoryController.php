@@ -23,7 +23,7 @@ class HistoryController extends Controller
              * Dibatasi agar halaman muat satu layar. Riwayat lengkap tetap
              * tersimpan dan dapat diunduh lewat laporan Riwayat Perubahan.
              */
-            'history' => $this->sigapDataService->history()->take(3),
+            'history' => $this->sigapDataService->recentHistory(3),
             'activities' => $this->sigapDataService->recentActivities(3),
             'reportLogs' => $this->sigapDataService->reportLogs()->take(2),
         ]));

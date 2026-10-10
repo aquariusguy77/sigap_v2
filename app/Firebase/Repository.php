@@ -66,6 +66,42 @@ abstract class Repository
             ->values();
     }
 
+    /**
+     * Sejumlah catatan terakhir saja, tanpa mengunduh seluruh node.
+     *
+     * Berbeda dari all()->take($n): yang membatasi di sini adalah Firebase,
+     * bukan PHP. Pada node dengan 3.000 catatan, all()->take(3) tetap
+     * mengunduh ketiga ribunya lebih dulu — sekitar 1,1 MB — hanya untuk
+     * membuang 2.997 di antaranya.
+     *
+     * Firebase mengurutkan menurut kunci, sedangkan daftar yang ditampilkan
+     * mengikuti kolom waktu masing-masing repositori. Keduanya hampir selalu
+     * sejalan karena kunci push berurut menurut waktu pembuatan, tetapi
+     * diambil berlebih lalu diurutkan ulang di sini agar urutannya tetap
+     * benar bila ada catatan yang kolom waktunya diisi mundur.
+     */
+    public function recent(int $limit): Collection
+    {
+        $limit = max(1, $limit);
+
+        $snapshot = $this->firebase->fetchLatest(
+            $this->firebase->path($this->node),
+            min(200, $limit * 4)
+        );
+
+        if (! is_array($snapshot)) {
+            return collect();
+        }
+
+        return collect($snapshot)
+            ->map(fn ($payload, $key) => is_array($payload) ? $this->hydrate((string) $key, $payload) : null)
+            ->filter()
+            ->sortByDesc(fn (Record $record) => (string) ($record->attributes[$this->sortBy] ?? ''))
+            ->when(! $this->sortDescending, fn (Collection $items) => $items->reverse())
+            ->values()
+            ->take($limit);
+    }
+
     public function find(string $id): ?Record
     {
         if (trim($id) === '') {

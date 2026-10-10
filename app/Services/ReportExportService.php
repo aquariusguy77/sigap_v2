@@ -97,6 +97,31 @@ class ReportExportService
         };
     }
 
+    /**
+     * Banyaknya baris sebuah laporan, untuk angka pada kartu di halaman
+     * Laporan.
+     *
+     * Dipisahkan dari rows() karena halaman itu hanya memerlukan angkanya.
+     * Memanggil rows()->count() berarti menyusun seluruh isi kelima laporan
+     * lebih dulu — pada basis data dengan 3.000 riwayat, 1,6 MB diunduh
+     * hanya untuk menampilkan lima bilangan.
+     *
+     * Empat laporan memetakan satu node apa adanya, tanpa penyaringan, jadi
+     * jumlahnya dapat dihitung di sisi Firebase tanpa mengunduh isinya.
+     * Hanya "prioritas" yang menyaring — hanya pengungsi yang dokumennya
+     * belum lengkap — sehingga isinya memang perlu dibaca.
+     */
+    public function countFor(string $key): int
+    {
+        return match ($key) {
+            'dokumen' => $this->data->countOf('documents'),
+            'penempatan' => $this->data->countOf('placements'),
+            'riwayat' => $this->data->countOf('history'),
+            'prioritas' => $this->priorityRows()->count(),
+            default => $this->data->countOf('refugees'),
+        };
+    }
+
     protected function refugeeRows(): Collection
     {
         return $this->data->refugees()->map(fn (Record $item) => [
