@@ -16,7 +16,9 @@ use App\Services\GoogleTokenService;
 use App\Services\ReportExportService;
 use App\Services\RoleAccessService;
 use App\Services\SigapDataService;
+use App\Session\FirebaseSessionHandler;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -53,6 +55,14 @@ class AppServiceProvider extends ServiceProvider
         Auth::provider('firebase', fn ($app) => new FirebaseUserProvider(
             $app->make(UserRepository::class),
             $app->make('hash')
+        ));
+
+        // Sesi disimpan di sisi server (Firebase), bukan di dalam cookie, agar
+        // logout benar-benar membatalkan sesi dan cookie lama tidak dapat
+        // dipakai ulang.
+        Session::extend('firebase', fn ($app) => new FirebaseSessionHandler(
+            $app->make(FirebaseRealtimeDatabaseService::class),
+            (int) config('session.lifetime', 120)
         ));
     }
 }
