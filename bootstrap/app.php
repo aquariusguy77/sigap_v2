@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureSigapAbility;
 use App\Http\Middleware\EnsureSigapAuthenticated;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -35,6 +36,9 @@ return Application::configure(basePath: dirname(__DIR__))
          * LoginThrottleService.
          */
         $middleware->trustProxies(at: '*');
+
+        // Menyisipkan tajuk keamanan HTTP pada setiap respons.
+        $middleware->append(SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
