@@ -54,7 +54,7 @@
                 <label for="loginEmail">Email</label>
                 <input class="control" type="email" name="email" id="loginEmail"
                        value="{{ old('email') }}" autocomplete="username"
-                       placeholder="nama@sigap-rudenim.local" required autofocus>
+                       placeholder="nama@sigap-rudenim.local" required>
             </div>
 
             <div class="auth-field">

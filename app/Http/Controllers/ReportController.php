@@ -22,12 +22,14 @@ class ReportController extends Controller
     {
         $this->ensureAbility('view-reports');
 
-        return view('reports.index', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Laporan',
             'pageDescription' => 'Unduh rekap operasional dalam bentuk PDF atau CSV.',
             'reports' => $this->reportCards(),
             'reportLogs' => $this->sigapDataService->reportLogs()->take(3),
-        ]));
+        ]);
+
+        return view('reports.index', $data);
     }
 
     /**

@@ -25,14 +25,16 @@ class SettingController extends Controller
     {
         $this->ensureAbility('manage-settings');
 
-        return view('settings.index', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Hak Akses',
             'pageDescription' => 'Akun terdaftar beserta kewenangan tiap peran.',
             'roles' => $this->roleAccessService->roles(),
             'roleFlow' => $this->roleAccessService->flow(),
             'accounts' => $this->users->listing(),
             'minimum' => $this->minimum(),
-        ]));
+        ]);
+
+        return view('settings.index', $data);
     }
 
     /**

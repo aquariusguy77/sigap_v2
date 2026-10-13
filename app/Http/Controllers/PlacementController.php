@@ -30,21 +30,23 @@ class PlacementController extends Controller
             'per_page' => max(5, min((int) request('per_page', 5), 20)),
         ];
 
-        return view('placements.index', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Penempatan',
             'pageDescription' => 'Lokasi hunian aktif dan riwayat mutasi pengungsi.',
             'placements' => $this->sigapDataService->paginatedFilteredPlacements($filters),
             'activeFilters' => $filters,
             'statusOptions' => $this->sigapDataService->placementStatusOptions(),
             'categoryOptions' => $this->sigapDataService->placementCategoryOptions(),
-        ]));
+        ]);
+
+        return view('placements.index', $data);
     }
 
     public function create(): View
     {
         $this->ensureAbility('manage-placements');
 
-        return view('placements.create', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Tambah Penempatan',
             'pageDescription' => 'Isi lokasi hunian, tanggal masuk, dan status penempatan.',
             'placement' => new Record(),
@@ -54,20 +56,24 @@ class PlacementController extends Controller
             'statusOptions' => $this->sigapDataService->placementStatusOptions(),
             'categoryOptions' => $this->sigapDataService->placementCategoryOptions(),
             'communityHouses' => $this->sigapDataService->communityHouseOptions(),
-        ]));
+        ]);
+
+        return view('placements.create', $data);
     }
 
     public function show(string $placement): View
     {
         $record = $this->findOrFail($placement);
 
-        return view('placements.show', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Detail Penempatan',
             'pageDescription' => 'Rincian lokasi, tanggal, dan status penempatan.',
             'placement' => $record,
             'placementView' => $record,
             'refugeeView' => $this->sigapDataService->refugeeById((string) $record->refugee_id),
-        ]));
+        ]);
+
+        return view('placements.show', $data);
     }
 
     public function store(PlacementUpsertRequest $request): RedirectResponse
@@ -99,7 +105,7 @@ class PlacementController extends Controller
     {
         $this->ensureAbility('manage-placements');
 
-        return view('placements.edit', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Ubah Penempatan',
             'pageDescription' => 'Perbarui lokasi, tanggal, dan status penempatan.',
             'placement' => $this->findOrFail($placement),
@@ -109,7 +115,9 @@ class PlacementController extends Controller
             'statusOptions' => $this->sigapDataService->placementStatusOptions(),
             'categoryOptions' => $this->sigapDataService->placementCategoryOptions(),
             'communityHouses' => $this->sigapDataService->communityHouseOptions(),
-        ]));
+        ]);
+
+        return view('placements.edit', $data);
     }
 
     public function update(PlacementUpsertRequest $request, string $placement): RedirectResponse

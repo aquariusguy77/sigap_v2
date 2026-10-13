@@ -23,8 +23,8 @@
 
         <div class="double-grid" style="margin-top:0;">
             <div>
-                <label class="table-meta">Pengungsi</label>
-                <select class="control" name="refugee_id" required>
+                <label class="table-meta" for="pilihPengungsiPenempatan">Pengungsi</label>
+                <select class="control" id="pilihPengungsiPenempatan" name="refugee_id" required>
                     <option value="">Pilih pengungsi</option>
                     @foreach ($refugees as $item)
                         <option value="{{ $item['id'] }}" @selected((string) $selectedRefugee === (string) $item['id'])>{{ $item['name'] }} - {{ $item['internal_id'] }}</option>
@@ -33,7 +33,7 @@
                 @error('refugee_id')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Kategori Penempatan</label>
+                <label class="table-meta" for="placementCategory">Kategori Penempatan</label>
                 <select class="control" name="category" id="placementCategory" required>
                     @foreach ($categoryOptions as $key => $option)
                         <option value="{{ $key }}" @selected($selectedCategory === $key)>{{ $option['label'] }}</option>
@@ -46,7 +46,7 @@
 
         {{-- Hanya untuk pengungsi berfasilitas IOM --}}
         <div class="iom-only-field" style="margin-top:18px;">
-            <label class="table-meta">Community House</label>
+            <label class="table-meta" for="communityHouse">Community House</label>
             <select class="control" name="community_house" id="communityHouse">
                 <option value="">Pilih Community House</option>
                 @foreach ($communityHouses as $house)
@@ -58,14 +58,14 @@
 
         {{-- Hanya untuk pengungsi mandiri --}}
         <div class="mandiri-only-field" style="margin-top:18px;">
-            <label class="table-meta">Alamat Tempat Tinggal</label>
+            <label class="table-meta" for="placementAddress">Alamat Tempat Tinggal</label>
             <textarea class="control" name="address" id="placementAddress" rows="3" style="width:100%;resize:vertical;" maxlength="500" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota">{{ old('address', $placement->address ?? '') }}</textarea>
             <div class="table-meta" style="margin-top:6px;">Tulis selengkap mungkin. Alamat inilah yang dipakai petugas untuk menemukan rumahnya saat pengawasan lapangan.</div>
             @error('address')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
         </div>
 
         <div class="mandiri-only-field" style="margin-top:18px;">
-            <label class="table-meta">Titik Lokasi <span style="opacity:.7;">(opsional)</span></label>
+            <label class="table-meta" for="coordinatePaste">Titik Lokasi <span style="opacity:.7;">(opsional)</span></label>
             <input class="control" type="text" id="coordinatePaste" name="coordinate_paste"
                    value="{{ old('coordinate_paste') }}"
                    placeholder="Tempel di sini: -7.348123, 112.727456 atau tautan Google Maps">
@@ -90,12 +90,12 @@
 
         <div class="double-grid mandiri-only-field" style="margin-top:14px;">
             <div>
-                <label class="table-meta">Lintang</label>
+                <label class="table-meta" for="latitudeInput">Lintang</label>
                 <input class="control" type="text" name="latitude" id="latitudeInput" inputmode="decimal" value="{{ old('latitude', $placement->latitude ?? '') }}" placeholder="-7.348123">
                 @error('latitude')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Bujur</label>
+                <label class="table-meta" for="longitudeInput">Bujur</label>
                 <input class="control" type="text" name="longitude" id="longitudeInput" inputmode="decimal" value="{{ old('longitude', $placement->longitude ?? '') }}" placeholder="112.727456">
                 @error('longitude')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
@@ -112,18 +112,18 @@
 
         <div class="double-grid" style="margin-top:18px;">
             <div>
-                <label class="table-meta">Tanggal Masuk</label>
-                <input class="control" type="date" name="entered_at" value="{{ old('entered_at', optional($placement->entered_at ?? null)->format('Y-m-d')) }}" required>
+                <label class="table-meta" for="kolom-entered-at">Tanggal Masuk</label>
+                <input id="kolom-entered-at" class="control" type="date" name="entered_at" value="{{ old('entered_at', optional($placement->entered_at ?? null)->format('Y-m-d')) }}" required>
                 @error('entered_at')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Tanggal Keluar</label>
-                <input class="control" type="date" name="exited_at" value="{{ old('exited_at', optional($placement->exited_at ?? null)->format('Y-m-d')) }}">
+                <label class="table-meta" for="kolom-exited-at">Tanggal Keluar</label>
+                <input id="kolom-exited-at" class="control" type="date" name="exited_at" value="{{ old('exited_at', optional($placement->exited_at ?? null)->format('Y-m-d')) }}">
                 @error('exited_at')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Status</label>
-                <select class="control" name="placement_status" required>
+                <label class="table-meta" for="kolom-placement-status">Status</label>
+                <select id="kolom-placement-status" class="control" name="placement_status" required>
                     <option value="">Pilih status</option>
                     @foreach ($statusOptions as $item)
                         <option value="{{ $item }}" @selected($selectedStatus === $item)>{{ $item }}</option>
@@ -134,8 +134,8 @@
         </div>
 
         <div style="margin-top:18px;">
-            <label class="table-meta">Catatan</label>
-            <textarea class="control" name="notes" rows="4" style="width:100%;resize:vertical;" maxlength="1000">{{ old('notes', $placement->notes ?? '') }}</textarea>
+            <label class="table-meta" for="kolom-notes">Catatan</label>
+            <textarea id="kolom-notes" class="control" name="notes" rows="4" style="width:100%;resize:vertical;" maxlength="1000">{{ old('notes', $placement->notes ?? '') }}</textarea>
             @error('notes')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
         </div>
 
@@ -217,8 +217,32 @@
     petanya tidak ditampilkan sama sekali dan pengisian koordinat tetap
     berjalan lewat kolom tempel dan kedua kolom angka.
 --}}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+{{--
+    crossorigin="anonymous" membuat peramban mengambil berkas ini tanpa
+    menyertakan kuki maupun kredensial apa pun ke cdnjs, dan merupakan syarat
+    agar atribut integrity dapat diperiksa sama sekali.
+
+    referrerpolicy="no-referrer" mencegah alamat halaman ini — yang memuat
+    id penempatan — ikut terkirim ke pihak ketiga.
+
+    Atribut integrity sengaja BELUM diisi. Nilainya berupa hash SHA-384 dari
+    isi berkasnya, dan mengisinya dengan nilai yang salah akan membuat
+    peramban menolak memuat Leaflet sama sekali. Untuk mengisinya, jalankan:
+
+        curl -s https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css \
+          | openssl dgst -sha384 -binary | openssl base64 -A
+
+        curl -s https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js \
+          | openssl dgst -sha384 -binary | openssl base64 -A
+
+    lalu tempelkan hasilnya sebagai integrity="sha384-HASIL" pada baris yang
+    bersangkutan. Halaman cdnjs untuk Leaflet juga menyediakan nilai yang
+    sama lewat tombol salin.
+--}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
     (() => {
         if (typeof L === 'undefined') {

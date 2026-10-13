@@ -18,7 +18,16 @@ class RoleAccessService
         return [
             'admin' => [
                 'label' => 'Admin',
-                'abilities' => ['full-access', 'manage-refugees', 'manage-documents', 'manage-placements', 'manage-reports', 'view-reports', 'manage-settings', 'review-changes'],
+                'abilities' => [
+                    'full-access',
+                    'manage-refugees',
+                    'manage-documents',
+                    'manage-placements',
+                    'manage-reports',
+                    'view-reports',
+                    'manage-settings',
+                    'review-changes',
+                ],
             ],
             'petugas' => [
                 'label' => 'Petugas Pendataan',
@@ -34,9 +43,21 @@ class RoleAccessService
     public function flow(): array
     {
         return [
-            ['step' => 'Input awal', 'actor' => 'Petugas Pendataan', 'description' => 'Mengisi identitas, penempatan, dan mengunggah dokumen awal.'],
-            ['step' => 'Pemeriksaan', 'actor' => 'Supervisor', 'description' => 'Memeriksa perubahan penting, memverifikasi dokumen, dan meninjau mutasi.'],
-            ['step' => 'Finalisasi', 'actor' => 'Admin', 'description' => 'Mengelola akun, ekspor laporan, dan penghapusan data sensitif.'],
+            [
+                'step' => 'Input awal',
+                'actor' => 'Petugas Pendataan',
+                'description' => 'Mengisi identitas, penempatan, dan mengunggah dokumen awal.',
+            ],
+            [
+                'step' => 'Pemeriksaan',
+                'actor' => 'Supervisor',
+                'description' => 'Memeriksa perubahan penting, memverifikasi dokumen, dan meninjau mutasi.',
+            ],
+            [
+                'step' => 'Finalisasi',
+                'actor' => 'Admin',
+                'description' => 'Mengelola akun, ekspor laporan, dan penghapusan data sensitif.',
+            ],
         ];
     }
 

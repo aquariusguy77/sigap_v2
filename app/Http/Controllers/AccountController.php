@@ -33,11 +33,13 @@ class AccountController extends Controller
     {
         $this->ensureAbility('manage-settings');
 
-        return view('account.password', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Ganti Kata Sandi',
             'pageDescription' => 'Mengubah kata sandi akun Anda sendiri.',
             'minimum' => $this->minimum(),
-        ]));
+        ]);
+
+        return view('account.password', $data);
     }
 
     public function updatePassword(Request $request): RedirectResponse

@@ -20,7 +20,10 @@ class RefugeeFilterRequest extends FormRequest
             'status' => ['nullable', Rule::in(config('sigap.reference.refugee_statuses', []))],
             'location' => ['nullable', Rule::in(config('sigap.reference.refugee_locations', []))],
             'document_status' => ['nullable', Rule::in(['Lengkap', 'Perlu Verifikasi', 'Belum Lengkap'])],
-            'sort' => ['nullable', Rule::in(['name', 'internal_id', 'nationality', 'status', 'location', 'updated_at'])],
+            'sort' => [
+                'nullable',
+                Rule::in(['name', 'internal_id', 'nationality', 'status', 'location', 'updated_at']),
+            ],
             'direction' => ['nullable', Rule::in(['asc', 'desc'])],
             'per_page' => ['nullable', Rule::in(['5', '10', '15', '20'])],
         ];

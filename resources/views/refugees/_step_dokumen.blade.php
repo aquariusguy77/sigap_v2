@@ -11,9 +11,10 @@
     <div class="double-grid" style="margin-top:18px;">
         @foreach ($documentTypeOptions as $index => $type)
             <div>
-                <label class="table-meta">{{ $type }}</label>
+                <label class="table-meta" for="berkasDokumen{{ $index }}">{{ $type }}</label>
                 <input type="hidden" name="documents[{{ $index }}][type]" value="{{ $type }}">
-                <input class="control" type="file" name="documents[{{ $index }}][file]" accept=".pdf,.jpg,.jpeg,.png">
+                <input class="control" type="file" id="berkasDokumen{{ $index }}"
+                       name="documents[{{ $index }}][file]" accept=".pdf,.jpg,.jpeg,.png">
                 @error('documents.' . $index . '.file')
                     <div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>
                 @enderror

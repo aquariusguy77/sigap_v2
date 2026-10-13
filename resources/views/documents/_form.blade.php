@@ -21,8 +21,8 @@
         </div>
         <div class="double-grid" style="margin-top:0;">
             <div>
-                <label class="table-meta">Pengungsi</label>
-                <select class="control" name="refugee_id" required>
+                <label class="table-meta" for="pilihPengungsiDokumen">Pengungsi</label>
+                <select class="control" id="pilihPengungsiDokumen" name="refugee_id" required>
                     <option value="">Pilih pengungsi</option>
                     @foreach ($refugees as $item)
                         <option value="{{ $item['id'] }}" @selected((string) $selectedRefugee === (string) $item['id'])>{{ $item['name'] }} - {{ $item['internal_id'] }}</option>
@@ -31,8 +31,8 @@
                 @error('refugee_id')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Jenis Dokumen</label>
-                <select class="control" name="document_type" required>
+                <label class="table-meta" for="kolom-document-type">Jenis Dokumen</label>
+                <select id="kolom-document-type" class="control" name="document_type" required>
                     <option value="">Pilih jenis</option>
                     @foreach ($documentTypes as $item)
                         <option value="{{ $item }}" @selected($selectedType === $item)>{{ $item }}</option>
@@ -41,18 +41,18 @@
                 @error('document_type')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Nama Berkas</label>
-                <input class="control" type="text" name="file_name" value="{{ old('file_name', $document->file_name ?? '') }}" required>
+                <label class="table-meta" for="kolom-file-name">Nama Berkas</label>
+                <input id="kolom-file-name" class="control" type="text" name="file_name" value="{{ old('file_name', $document->file_name ?? '') }}" required>
                 @error('file_name')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Pilih Berkas</label>
-                <input class="control" type="file" name="uploaded_file" accept=".pdf,.jpg,.jpeg,.png">
+                <label class="table-meta" for="kolom-uploaded-file">Pilih Berkas</label>
+                <input id="kolom-uploaded-file" class="control" type="file" name="uploaded_file" accept=".pdf,.jpg,.jpeg,.png">
                 @error('uploaded_file')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Status Verifikasi</label>
-                <select class="control" name="verification_status" required>
+                <label class="table-meta" for="kolom-verification-status">Status Verifikasi</label>
+                <select id="kolom-verification-status" class="control" name="verification_status" required>
                     <option value="">Pilih status</option>
                     @foreach ($statusOptions as $item)
                         <option value="{{ $item }}" @selected($selectedStatus === $item)>{{ $item }}</option>
@@ -61,14 +61,14 @@
                 @error('verification_status')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta">Tanggal Unggah</label>
-                <input class="control" type="date" name="uploaded_at" value="{{ old('uploaded_at', optional($document->uploaded_at ?? null)->format('Y-m-d')) }}" required>
+                <label class="table-meta" for="kolom-uploaded-at">Tanggal Unggah</label>
+                <input id="kolom-uploaded-at" class="control" type="date" name="uploaded_at" value="{{ old('uploaded_at', optional($document->uploaded_at ?? null)->format('Y-m-d')) }}" required>
                 @error('uploaded_at')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
         </div>
         <div style="margin-top:18px;">
-            <label class="table-meta">Catatan</label>
-            <textarea class="control" name="notes" rows="4" style="width:100%;resize:vertical;" maxlength="1000">{{ old('notes', $document->notes ?? '') }}</textarea>
+            <label class="table-meta" for="kolom-notes">Catatan</label>
+            <textarea id="kolom-notes" class="control" name="notes" rows="4" style="width:100%;resize:vertical;" maxlength="1000">{{ old('notes', $document->notes ?? '') }}</textarea>
             @error('notes')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
         </div>
         <div class="subtle-box">

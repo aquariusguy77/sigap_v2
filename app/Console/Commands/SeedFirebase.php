@@ -92,9 +92,24 @@ class SeedFirebase extends Command
         $this->line('Membuat akun pengguna:');
 
         $accounts = [
-            ['name' => 'Administrator SIGAP', 'email' => 'admin@sigap-rudenim.local', 'role' => 'admin', 'env' => 'SIGAP_SEED_ADMIN_PASSWORD'],
-            ['name' => 'Petugas Pendataan', 'email' => 'petugas@sigap-rudenim.local', 'role' => 'petugas', 'env' => 'SIGAP_SEED_PETUGAS_PASSWORD'],
-            ['name' => 'Supervisor Shift', 'email' => 'supervisor@sigap-rudenim.local', 'role' => 'supervisor', 'env' => 'SIGAP_SEED_SUPERVISOR_PASSWORD'],
+            [
+                'name' => 'Administrator SIGAP',
+                'email' => 'admin@sigap-rudenim.local',
+                'role' => 'admin',
+                'env' => 'SIGAP_SEED_ADMIN_PASSWORD',
+            ],
+            [
+                'name' => 'Petugas Pendataan',
+                'email' => 'petugas@sigap-rudenim.local',
+                'role' => 'petugas',
+                'env' => 'SIGAP_SEED_PETUGAS_PASSWORD',
+            ],
+            [
+                'name' => 'Supervisor Shift',
+                'email' => 'supervisor@sigap-rudenim.local',
+                'role' => 'supervisor',
+                'env' => 'SIGAP_SEED_SUPERVISOR_PASSWORD',
+            ],
         ];
 
         $acak = [];
@@ -234,44 +249,116 @@ class SeedFirebase extends Command
          * Verifikasi punya isi yang masuk akal untuk ditunjukkan.
          */
         $samples = [
-            ['internal_id' => 'RDS-26001', 'name' => 'Amina Hassan', 'nationality' => 'Somalia', 'unhcr_number' => 'UNHCR-SOM-8812', 'phone' => '0812-3311-4501',
-             'status' => 'Aktif', 'location' => 'CH Puspa Agro', 'notes' => 'Kedua kartu sudah dikumpulkan dan terverifikasi.',
+            [
+                'internal_id' => 'RDS-26001',
+                'name' => 'Amina Hassan',
+                'nationality' => 'Somalia',
+                'unhcr_number' => 'UNHCR-SOM-8812',
+                'phone' => '0812-3311-4501',
+             'status' => 'Aktif',
+             'location' => 'CH Puspa Agro',
+             'notes' => 'Kedua kartu sudah dikumpulkan dan terverifikasi.',
              'placement' => ['category' => 'iom', 'community_house' => 'CH Puspa Agro'],
              'berkas' => ['Kartu Pengungsi' => 'Lengkap', 'Kartu Wajib Lapor' => 'Lengkap']],
 
-            ['internal_id' => 'RDS-26004', 'name' => 'Mahmoud Kareem', 'nationality' => 'Irak', 'unhcr_number' => 'UNHCR-IRQ-4471', 'phone' => '0813-5522-8830',
-             'status' => 'Perlu Verifikasi', 'location' => 'CH Green Bamboo', 'notes' => 'Kartu Wajib Lapor menunggu pemeriksaan supervisor.',
+            [
+                'internal_id' => 'RDS-26004',
+                'name' => 'Mahmoud Kareem',
+                'nationality' => 'Irak',
+                'unhcr_number' => 'UNHCR-IRQ-4471',
+                'phone' => '0813-5522-8830',
+             'status' => 'Perlu Verifikasi',
+             'location' => 'CH Green Bamboo',
+             'notes' => 'Kartu Wajib Lapor menunggu pemeriksaan supervisor.',
              'placement' => ['category' => 'iom', 'community_house' => 'CH Green Bamboo'],
              'berkas' => ['Kartu Pengungsi' => 'Lengkap', 'Kartu Wajib Lapor' => 'Perlu Verifikasi']],
 
-            ['internal_id' => 'RDS-26009', 'name' => 'Samira Nabil', 'nationality' => 'Afghanistan', 'unhcr_number' => 'UNHCR-AFG-2290', 'phone' => '0857-7788-1204',
+            [
+                'internal_id' => 'RDS-26009',
+                'name' => 'Samira Nabil',
+                'nationality' => 'Afghanistan',
+                'unhcr_number' => 'UNHCR-AFG-2290',
+                'phone' => '0857-7788-1204',
              'status' => 'Aktif', 'location' => 'CH Puspa Agro', 'notes' => 'Tinggal bersama dua anak.',
              'placement' => ['category' => 'iom', 'community_house' => 'CH Puspa Agro'],
              'berkas' => ['Kartu Pengungsi' => 'Lengkap', 'Kartu Wajib Lapor' => 'Lengkap']],
 
-            ['internal_id' => 'RDS-26013', 'name' => 'Nadia Farouk', 'nationality' => 'Sudan', 'unhcr_number' => 'UNHCR-SDN-3345', 'phone' => '0852-9911-2077',
-             'status' => 'Perlu Verifikasi', 'location' => 'CH Green Bamboo', 'notes' => 'Baru pindah dari Community House sebelah.',
+            [
+                'internal_id' => 'RDS-26013',
+                'name' => 'Nadia Farouk',
+                'nationality' => 'Sudan',
+                'unhcr_number' => 'UNHCR-SDN-3345',
+                'phone' => '0852-9911-2077',
+             'status' => 'Perlu Verifikasi',
+             'location' => 'CH Green Bamboo',
+             'notes' => 'Baru pindah dari Community House sebelah.',
              'placement' => ['category' => 'iom', 'community_house' => 'CH Green Bamboo'],
              'berkas' => ['Kartu Pengungsi' => 'Perlu Verifikasi']],
 
-            ['internal_id' => 'RDS-26018', 'name' => 'Yousef Rahman', 'nationality' => 'Myanmar', 'unhcr_number' => 'UNHCR-MMR-6654', 'phone' => '0821-4499-6612',
-             'status' => 'Aktif', 'location' => 'Pengungsi Mandiri', 'notes' => 'Alamat sudah diverifikasi petugas lapangan.',
-             'placement' => ['category' => 'mandiri', 'address' => 'Jalan Jemur Andayani III No. 24, RT 03 RW 05, Kelurahan Jemurwonosari, Kecamatan Wonocolo, Surabaya', 'latitude' => '-7.328912', 'longitude' => '112.734501'],
+            [
+                'internal_id' => 'RDS-26018',
+                'name' => 'Yousef Rahman',
+                'nationality' => 'Myanmar',
+                'unhcr_number' => 'UNHCR-MMR-6654',
+                'phone' => '0821-4499-6612',
+             'status' => 'Aktif',
+             'location' => 'Pengungsi Mandiri',
+             'notes' => 'Alamat sudah diverifikasi petugas lapangan.',
+             'placement' => [
+                 'category' => 'mandiri',
+                 'address' => 'Jalan Jemur Andayani III No. 24, RT 03 RW 05, Kelurahan Jemurwonosari, Kecamatan Wonocolo, Surabaya',
+                 'latitude' => '-7.328912',
+                 'longitude' => '112.734501',
+             ],
              'berkas' => ['Kartu Pengungsi' => 'Lengkap', 'Kartu Wajib Lapor' => 'Lengkap']],
 
-            ['internal_id' => 'RDS-26022', 'name' => 'Layla Aziz', 'nationality' => 'Sudan', 'unhcr_number' => 'UNHCR-SDN-1180', 'phone' => '0878-2200-7745',
-             'status' => 'Perlu Verifikasi', 'location' => 'Pengungsi Mandiri', 'notes' => 'Kartu Wajib Lapor belum dikumpulkan.',
-             'placement' => ['category' => 'mandiri', 'address' => 'Jalan Rungkut Asri Tengah XI No. 7, RT 01 RW 09, Kelurahan Rungkut Kidul, Kecamatan Rungkut, Surabaya', 'latitude' => '-7.334215', 'longitude' => '112.775338'],
+            [
+                'internal_id' => 'RDS-26022',
+                'name' => 'Layla Aziz',
+                'nationality' => 'Sudan',
+                'unhcr_number' => 'UNHCR-SDN-1180',
+                'phone' => '0878-2200-7745',
+             'status' => 'Perlu Verifikasi',
+             'location' => 'Pengungsi Mandiri',
+             'notes' => 'Kartu Wajib Lapor belum dikumpulkan.',
+             'placement' => [
+                 'category' => 'mandiri',
+                 'address' => 'Jalan Rungkut Asri Tengah XI No. 7, RT 01 RW 09, Kelurahan Rungkut Kidul, Kecamatan Rungkut, Surabaya',
+                 'latitude' => '-7.334215',
+                 'longitude' => '112.775338',
+             ],
              'berkas' => ['Kartu Pengungsi' => 'Lengkap']],
 
-            ['internal_id' => 'RDS-26027', 'name' => 'Karim Saeed', 'nationality' => 'Yaman', 'unhcr_number' => 'UNHCR-YEM-7130', 'phone' => '0896-6611-3390',
-             'status' => 'Aktif', 'location' => 'Pengungsi Mandiri', 'notes' => 'Bekerja paruh waktu di kawasan Keputih.',
-             'placement' => ['category' => 'mandiri', 'address' => 'Jalan Keputih Tegal Timur No. 118, RT 02 RW 04, Kelurahan Keputih, Kecamatan Sukolilo, Surabaya', 'latitude' => '-7.293477', 'longitude' => '112.803215'],
+            [
+                'internal_id' => 'RDS-26027',
+                'name' => 'Karim Saeed',
+                'nationality' => 'Yaman',
+                'unhcr_number' => 'UNHCR-YEM-7130',
+                'phone' => '0896-6611-3390',
+             'status' => 'Aktif',
+             'location' => 'Pengungsi Mandiri',
+             'notes' => 'Bekerja paruh waktu di kawasan Keputih.',
+             'placement' => [
+                 'category' => 'mandiri',
+                 'address' => 'Jalan Keputih Tegal Timur No. 118, RT 02 RW 04, Kelurahan Keputih, Kecamatan Sukolilo, Surabaya',
+                 'latitude' => '-7.293477',
+                 'longitude' => '112.803215',
+             ],
              'berkas' => ['Kartu Pengungsi' => 'Lengkap', 'Kartu Wajib Lapor' => 'Lengkap']],
 
-            ['internal_id' => 'RDS-26031', 'name' => 'Omar Zaki', 'nationality' => 'Eritrea', 'unhcr_number' => 'UNHCR-ERI-5520', 'phone' => '0819-3344-8802',
-             'status' => 'Perlu Verifikasi', 'location' => 'Pengungsi Mandiri', 'notes' => 'Titik koordinat rumah belum ditetapkan.',
-             'placement' => ['category' => 'mandiri', 'address' => 'Jalan Dukuh Kupang Barat XII No. 41, RT 04 RW 06, Kelurahan Dukuh Kupang, Kecamatan Dukuhpakis, Surabaya'],
+            [
+                'internal_id' => 'RDS-26031',
+                'name' => 'Omar Zaki',
+                'nationality' => 'Eritrea',
+                'unhcr_number' => 'UNHCR-ERI-5520',
+                'phone' => '0819-3344-8802',
+             'status' => 'Perlu Verifikasi',
+             'location' => 'Pengungsi Mandiri',
+             'notes' => 'Titik koordinat rumah belum ditetapkan.',
+             'placement' => [
+                 'category' => 'mandiri',
+                 'address' => 'Jalan Dukuh Kupang Barat XII No. 41, RT 04 RW 06, Kelurahan Dukuh Kupang, Kecamatan Dukuhpakis, Surabaya',
+             ],
              'berkas' => []],
         ];
 

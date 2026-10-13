@@ -14,13 +14,15 @@ class DashboardController extends Controller
 
     public function index(): View
     {
-        return view('dashboard.index', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Dashboard',
             'pageDescription' => 'Ringkasan data pengungsi, dokumen, dan aktivitas terbaru.',
             'stats' => $this->sigapDataService->stats(),
             'activities' => $this->sigapDataService->recentActivities(3),
             'refugees' => $this->sigapDataService->recentlyUpdatedRefugees(3),
             'locationSummary' => $this->sigapDataService->locationSummary(3),
-        ]));
+        ]);
+
+        return view('dashboard.index', $data);
     }
 }

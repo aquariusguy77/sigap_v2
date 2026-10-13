@@ -32,13 +32,15 @@ class RefugeeController extends Controller
     {
         $filters = $request->filters();
 
-        return view('refugees.index', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Data Pengungsi',
             'pageDescription' => 'Cari, saring, dan kelola data pengungsi.',
             'refugees' => $this->sigapDataService->paginatedFilteredRefugees($filters),
             'filterOptions' => $this->sigapDataService->refugeeFilterOptions(),
             'activeFilters' => $filters,
-        ]));
+        ]);
+
+        return view('refugees.index', $data);
     }
 
     public function create(): View
@@ -58,14 +60,16 @@ class RefugeeController extends Controller
     {
         $record = $this->findOrFail($refugee);
 
-        return view('refugees.show', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Detail Pengungsi',
             'pageDescription' => 'Profil lengkap, penempatan, dokumen, dan riwayat perubahan.',
             'refugee' => $record,
             'placement' => $this->sigapDataService->placementForRefugee($refugee),
             'document' => $this->sigapDataService->documentForRefugee($refugee),
             'history' => $this->sigapDataService->historyForRefugee($refugee),
-        ]));
+        ]);
+
+        return view('refugees.show', $data);
     }
 
     public function store(RefugeeUpsertRequest $request): RedirectResponse

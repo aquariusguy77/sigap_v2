@@ -16,7 +16,7 @@ class HistoryController extends Controller
     {
         $this->ensureAbility('review-changes');
 
-        return view('history.index', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Riwayat Perubahan',
             'pageDescription' => 'Catatan perubahan data beserta pelaksana dan waktunya.',
             /*
@@ -26,6 +26,8 @@ class HistoryController extends Controller
             'history' => $this->sigapDataService->recentHistory(3),
             'activities' => $this->sigapDataService->recentActivities(3),
             'reportLogs' => $this->sigapDataService->reportLogs()->take(2),
-        ]));
+        ]);
+
+        return view('history.index', $data);
     }
 }

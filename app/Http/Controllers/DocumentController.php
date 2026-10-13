@@ -36,21 +36,23 @@ class DocumentController extends Controller
             'per_page' => max(5, min((int) request('per_page', 5), 20)),
         ];
 
-        return view('documents.index', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Dokumen',
             'pageDescription' => 'Berkas pendukung pengungsi beserta status verifikasinya.',
             'documents' => $this->sigapDataService->paginatedFilteredDocuments($filters),
             'activeFilters' => $filters,
             'statusOptions' => $this->sigapDataService->documentStatusOptions(),
             'documentTypes' => $this->sigapDataService->documentTypeOptions(),
-        ]));
+        ]);
+
+        return view('documents.index', $data);
     }
 
     public function create(): View
     {
         $this->ensureAbility('manage-documents');
 
-        return view('documents.create', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Tambah Dokumen',
             'pageDescription' => 'Unggah berkas dan lengkapi keterangan dokumen.',
             'document' => new Record(),
@@ -59,20 +61,24 @@ class DocumentController extends Controller
             'refugees' => $this->sigapDataService->refugeeSelectOptions(),
             'documentTypes' => $this->sigapDataService->documentTypeOptions(),
             'statusOptions' => $this->sigapDataService->documentStatusOptions(),
-        ]));
+        ]);
+
+        return view('documents.create', $data);
     }
 
     public function show(string $document): View
     {
         $record = $this->findOrFail($document);
 
-        return view('documents.show', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Detail Dokumen',
             'pageDescription' => 'Rincian berkas dan status verifikasinya.',
             'document' => $record,
             'documentView' => $record,
             'refugeeView' => $this->sigapDataService->refugeeById((string) $record->refugee_id),
-        ]));
+        ]);
+
+        return view('documents.show', $data);
     }
 
     public function store(RefugeeDocumentUpsertRequest $request): RedirectResponse
@@ -106,7 +112,7 @@ class DocumentController extends Controller
     {
         $this->ensureAbility('manage-documents');
 
-        return view('documents.edit', array_merge($this->baseViewData(), [
+        $data = array_merge($this->baseViewData(), [
             'pageHeading' => 'Ubah Dokumen',
             'pageDescription' => 'Perbarui keterangan berkas dan status verifikasinya.',
             'document' => $this->findOrFail($document),
@@ -115,7 +121,9 @@ class DocumentController extends Controller
             'refugees' => $this->sigapDataService->refugeeSelectOptions(),
             'documentTypes' => $this->sigapDataService->documentTypeOptions(),
             'statusOptions' => $this->sigapDataService->documentStatusOptions(),
-        ]));
+        ]);
+
+        return view('documents.edit', $data);
     }
 
     public function update(RefugeeDocumentUpsertRequest $request, string $document): RedirectResponse

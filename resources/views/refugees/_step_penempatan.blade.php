@@ -1,7 +1,7 @@
 <div class="wizard-panel" data-step-panel="3" style="margin-top:18px;display:none;">
     <div>
-        <label class="table-meta">Lokasi Aktif</label>
-        <select class="control" name="location" required>
+        <label class="table-meta" for="kolom-location">Lokasi Aktif</label>
+        <select id="kolom-location" class="control" name="location" required>
             <option value="">Pilih lokasi</option>
             @foreach ($locationOptions as $item)
                 <option value="{{ $item }}" @selected($selectedLocation === $item)>{{ $item }}</option>

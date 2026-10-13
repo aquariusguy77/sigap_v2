@@ -18,9 +18,24 @@ abstract class Controller
             ['route' => 'refugees.index', 'label' => 'Data Pengungsi', 'icon' => 'users', 'visible' => $isSignedIn],
             ['route' => 'placements.index', 'label' => 'Penempatan', 'icon' => 'location', 'visible' => $isSignedIn],
             ['route' => 'documents.index', 'label' => 'Dokumen', 'icon' => 'folder', 'visible' => $isSignedIn],
-            ['route' => 'history.index', 'label' => 'Riwayat Perubahan', 'icon' => 'history', 'visible' => $isSignedIn && $roleAccess->can('review-changes')],
-            ['route' => 'reports.index', 'label' => 'Laporan', 'icon' => 'report', 'visible' => $isSignedIn && $roleAccess->can('view-reports')],
-            ['route' => 'settings.index', 'label' => 'Hak Akses', 'icon' => 'shield', 'visible' => $isSignedIn && $roleAccess->can('manage-settings')],
+            [
+                'route' => 'history.index',
+                'label' => 'Riwayat Perubahan',
+                'icon' => 'history',
+                'visible' => $isSignedIn && $roleAccess->can('review-changes'),
+            ],
+            [
+                'route' => 'reports.index',
+                'label' => 'Laporan',
+                'icon' => 'report',
+                'visible' => $isSignedIn && $roleAccess->can('view-reports'),
+            ],
+            [
+                'route' => 'settings.index',
+                'label' => 'Hak Akses',
+                'icon' => 'shield',
+                'visible' => $isSignedIn && $roleAccess->can('manage-settings'),
+            ],
         ];
 
         return [

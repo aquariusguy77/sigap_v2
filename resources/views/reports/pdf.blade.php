@@ -52,7 +52,8 @@
 <body>
 
 <div class="kop">
-    <table>
+    {{-- Tabel tata letak, bukan tabel data: ditandai presentation agar pembaca layar tidak mengumumkannya sebagai tabel dan tidak menuntut kolom judul. --}}
+    <table role="presentation">
         <tr>
             <td class="logo">@if (filled($logo))<img src="{{ $logo }}" alt="Lambang Imigrasi">@endif</td>
             <td class="tengah">
@@ -102,7 +103,8 @@
     </tbody>
 </table>
 
-<table class="ttd">
+{{-- Tabel tata letak, bukan tabel data: ditandai presentation agar pembaca layar tidak mengumumkannya sebagai tabel dan tidak menuntut kolom judul. --}}
+<table class="ttd" role="presentation">
     <tr>
         <td>
             Jumlah data: <strong>{{ count($rows) }}</strong> baris<br>
