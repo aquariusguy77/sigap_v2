@@ -44,7 +44,7 @@
         "APP_TIMEZONE": "Asia/Jakarta",
         "APP_LOCALE": "id",
         "LOG_CHANNEL": "stderr",
-        "SESSION_DRIVER": "cookie",
+        "SESSION_DRIVER": "firebase",
         "CACHE_STORE": "array",
         "QUEUE_CONNECTION": "sync",
         "APP_CONFIG_CACHE": "/tmp/config.php",
