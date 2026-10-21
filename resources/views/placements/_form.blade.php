@@ -5,7 +5,7 @@
     $selectedHouse = old('community_house', $placement->community_house ?? '');
 @endphp
 
-<form method="POST" action="{{ $formAction }}">
+<form method="POST" action="{{ $formAction }}" novalidate>
     @csrf
     @if ($formMethod !== 'POST')
         @method($formMethod)

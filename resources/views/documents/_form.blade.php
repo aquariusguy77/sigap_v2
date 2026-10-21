@@ -4,7 +4,7 @@
     $selectedStatus = old('verification_status', $document->verification_status ?? '');
 @endphp
 
-<form method="POST" action="{{ $formAction }}" enctype="multipart/form-data">
+<form method="POST" action="{{ $formAction }}" enctype="multipart/form-data" novalidate>
     @csrf
     @if ($formMethod !== 'POST')
         @method($formMethod)

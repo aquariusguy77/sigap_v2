@@ -128,5 +128,6 @@
             });
         })();
     </script>
+    @include('partials._koneksi')
 </body>
 </html>

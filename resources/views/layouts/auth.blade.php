@@ -14,5 +14,6 @@
 </head>
 <body class="auth-body">
     @yield('content')
+    @include('partials._koneksi')
 </body>
 </html>

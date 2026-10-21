@@ -2,6 +2,7 @@
 
 namespace App\Session;
 
+use App\Exceptions\FirebaseReadException;
 use App\Services\FirebaseRealtimeDatabaseService;
 use Illuminate\Support\Carbon;
 use SessionHandlerInterface;
@@ -44,6 +45,11 @@ class FirebaseSessionHandler implements SessionHandlerInterface
      * Membaca data sesi. Mengembalikan string kosong bila node tidak ada atau
      * sudah melewati masa aktif; keduanya diperlakukan sebagai sesi yang tidak
      * berlaku sehingga Laravel memulai sesi baru.
+     *
+     * Bila Firebase tidak terjangkau, FirebaseReadException sengaja dibiarkan
+     * lolos. Menganggapnya sesi kosong akan melempar pengguna ke halaman masuk
+     * seolah-olah sesinya habis, padahal yang terjadi adalah gangguan
+     * sambungan; pengguna justru perlu melihat halaman "Data gagal dimuat".
      */
     public function read(string $id): string
     {
@@ -87,7 +93,16 @@ class FirebaseSessionHandler implements SessionHandlerInterface
      */
     public function gc(int $max_lifetime): int
     {
-        $all = $this->firebase->fetchNode($this->firebase->path('sessions'));
+        /*
+         * Pembersihan berjalan acak di tengah permintaan biasa. Bila Firebase
+         * sedang tidak terjangkau, pembersihan cukup dilewati; tidak perlu
+         * menggagalkan halaman yang sedang dibuka pengguna.
+         */
+        try {
+            $all = $this->firebase->fetchNode($this->firebase->path('sessions'));
+        } catch (FirebaseReadException) {
+            return 0;
+        }
 
         if (! is_array($all)) {
             return 0;

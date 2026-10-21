@@ -2,9 +2,34 @@
     $selectedStatus = old('status', $refugee->status ?? '');
     $selectedNationality = old('nationality', $refugee->nationality ?? '');
     $selectedLocation = old('location', $refugee->location ?? '');
+
+    /*
+     * Kolom pada tiap langkah formulir. Dipakai untuk menandai langkah yang
+     * berisi galat dan membuka langsung langkah galat pertama setelah
+     * formulir ditolak, supaya pesan pada langkah yang tersembunyi tidak
+     * terlewat.
+     */
+    $kolomLangkah = [
+        1 => ['internal_id', 'name', 'nationality', 'unhcr_number', 'phone'],
+        2 => ['status', 'registered_at', 'notes'],
+        3 => ['location'],
+        4 => ['documents', 'documents.*', 'documents.*.file', 'documents.*.type'],
+    ];
+    $langkahBergalat = collect($kolomLangkah)
+        ->filter(fn (array $kolom) => $errors->hasAny($kolom))
+        ->keys()
+        ->all();
 @endphp
 
-<form method="POST" action="{{ $formAction }}" enctype="multipart/form-data">
+{{--
+    novalidate: validasi bawaan peramban dimatikan. Kolom wajib berada di
+    langkah yang disembunyikan, dan peramban tidak dapat menunjuk kolom
+    tersembunyi, sehingga sebelumnya pengiriman tertahan tanpa pesan apa pun.
+    Seluruh pemeriksaan kini dilakukan di server, yang memberi pesan pada
+    setiap kolom yang bermasalah sekaligus.
+--}}
+<form method="POST" action="{{ $formAction }}" enctype="multipart/form-data" novalidate
+      data-langkah-awal="{{ $langkahBergalat[0] ?? 1 }}">
     @csrf
     @if ($formMethod !== 'POST')
         @method($formMethod)
@@ -48,7 +73,9 @@
         const prevButton = document.querySelector('.wizard-prev');
         const nextButton = document.querySelector('.wizard-next');
         const submitButton = document.querySelector('.wizard-submit');
-        let currentStep = 1;
+        const form = submitButton ? submitButton.closest('form') : null;
+        // Setelah ditolak server, mulai dari langkah galat pertama.
+        let currentStep = Number(form?.dataset.langkahAwal) || 1;
 
         const renderStep = () => {
             tabs.forEach((tab, index) => {

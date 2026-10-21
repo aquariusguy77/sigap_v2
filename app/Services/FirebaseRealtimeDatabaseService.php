@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Exceptions\FirebaseReadException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -82,21 +84,42 @@ class FirebaseRealtimeDatabaseService
             return $this->ingatan[$path];
         }
 
+        $response = $this->baca(fn () => $this->request()->get($this->endpoint($path)));
+
+        return $this->ingatan[$path] = $response->json();
+    }
+
+    /**
+     * Menjalankan satu permintaan baca dan memastikan jawabannya sah.
+     *
+     * Node yang tidak ada dijawab Firebase dengan kode 200 berisi null, dan
+     * itu tetap dikembalikan sebagai "kosong". Yang dilempar sebagai
+     * FirebaseReadException hanyalah kegagalan sungguhan: sambungan putus,
+     * waktu tunggu habis, atau Firebase menjawab dengan kode galat. Dulu
+     * keduanya sama-sama menjadi null, sehingga gangguan sambungan tampil
+     * sebagai daftar kosong.
+     *
+     * @param  callable(): Response  $kirim
+     *
+     * @throws FirebaseReadException
+     */
+    protected function baca(callable $kirim): Response
+    {
         try {
-            $response = $this->request()->get($this->endpoint($path));
-
-            if ($response->failed()) {
-                $this->lastError = 'Firebase menjawab kode ' . $response->status();
-
-                return null;
-            }
-
-            return $this->ingatan[$path] = $response->json();
+            $response = $kirim();
         } catch (Throwable $e) {
             $this->lastError = $e->getMessage();
 
-            return null;
+            throw FirebaseReadException::gagalMembaca($this->lastError);
         }
+
+        if ($response->failed()) {
+            $this->lastError = 'Firebase menjawab kode ' . $response->status();
+
+            throw FirebaseReadException::gagalMembaca($this->lastError);
+        }
+
+        return $response;
     }
 
     /**
@@ -165,23 +188,11 @@ class FirebaseRealtimeDatabaseService
             return $this->ingatan[$ingatanKunci];
         }
 
-        try {
-            $response = $this->request()
-                ->withQueryParameters(['orderBy' => '"$key"', 'limitToLast' => $limit])
-                ->get($this->endpoint($path));
+        $response = $this->baca(fn () => $this->request()
+            ->withQueryParameters(['orderBy' => '"$key"', 'limitToLast' => $limit])
+            ->get($this->endpoint($path)));
 
-            if ($response->failed()) {
-                $this->lastError = 'Firebase menjawab kode ' . $response->status();
-
-                return null;
-            }
-
-            return $this->ingatan[$ingatanKunci] = $response->json();
-        } catch (Throwable $e) {
-            $this->lastError = $e->getMessage();
-
-            return null;
-        }
+        return $this->ingatan[$ingatanKunci] = $response->json();
     }
 
     /**
@@ -204,25 +215,13 @@ class FirebaseRealtimeDatabaseService
             return (int) $this->ingatan[$ingatanKunci];
         }
 
-        try {
-            $response = $this->request()
-                ->withQueryParameters(['shallow' => 'true'])
-                ->get($this->endpoint($path));
+        $response = $this->baca(fn () => $this->request()
+            ->withQueryParameters(['shallow' => 'true'])
+            ->get($this->endpoint($path)));
 
-            if ($response->failed()) {
-                $this->lastError = 'Firebase menjawab kode ' . $response->status();
+        $isi = $response->json();
 
-                return 0;
-            }
-
-            $isi = $response->json();
-
-            return $this->ingatan[$ingatanKunci] = is_array($isi) ? count($isi) : 0;
-        } catch (Throwable $e) {
-            $this->lastError = $e->getMessage();
-
-            return 0;
-        }
+        return $this->ingatan[$ingatanKunci] = is_array($isi) ? count($isi) : 0;
     }
 
     public function fetchCollection(string $node, callable $normalizer): Collection

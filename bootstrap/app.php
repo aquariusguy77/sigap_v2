@@ -1,11 +1,13 @@
 <?php
 
+use App\Exceptions\FirebaseReadException;
 use App\Http\Middleware\EnsureSigapAbility;
 use App\Http\Middleware\EnsureSigapAuthenticated;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -41,5 +43,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        /*
+         * Firebase tidak dapat dibaca. Pengguna diberi tahu bahwa datanya
+         * gagal dimuat, alih-alih melihat daftar kosong yang menyesatkan
+         * atau dilempar ke halaman masuk seolah sesinya habis.
+         */
+        $exceptions->render(function (FirebaseReadException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Data gagal dimuat. Coba lagi beberapa saat lagi.'], 503);
+            }
+
+            return response()->view('errors.data-unavailable', [], 503);
+        });
     })->create();
