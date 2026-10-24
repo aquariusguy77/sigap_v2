@@ -125,4 +125,20 @@ class RoleAccessService
 
         return in_array('full-access', $abilities, true) || in_array($ability, $abilities, true);
     }
+
+    /**
+     * Seperti can(), tetapi full-access tidak dihitung.
+     *
+     * Dipakai untuk kewenangan yang memang hanya milik satu peran. Verifikasi
+     * dokumen, misalnya, khusus Supervisor: Admin yang ikut memverifikasi
+     * menghapus pemisahan tugas antara yang mengelola dan yang memeriksa.
+     */
+    public function holds(string $ability): bool
+    {
+        if (! $this->isSignedIn()) {
+            return false;
+        }
+
+        return in_array($ability, $this->roles()[$this->currentRoleKey()]['abilities'] ?? [], true);
+    }
 }

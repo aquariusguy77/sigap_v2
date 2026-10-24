@@ -10,6 +10,7 @@ use App\Firebase\Record;
 use App\Firebase\RefugeeRepository;
 use App\Http\Requests\RefugeeDocumentUpsertRequest;
 use App\Services\FirebaseStorageService;
+use App\Services\RoleAccessService;
 use App\Services\SigapDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -168,7 +169,12 @@ class DocumentController extends Controller
      */
     public function verify(Request $request, string $document): RedirectResponse
     {
-        $this->ensureAbility('verify-documents');
+        // Khusus Supervisor; full-access milik Admin sengaja tidak berlaku di sini.
+        abort_unless(
+            app(RoleAccessService::class)->holds('verify-documents'),
+            403,
+            'Verifikasi dokumen hanya dapat dilakukan Supervisor.'
+        );
         $existing = $this->findOrFail($document);
 
         $validated = $request->validate([
