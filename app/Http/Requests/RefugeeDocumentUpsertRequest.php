@@ -30,7 +30,11 @@ class RefugeeDocumentUpsertRequest extends FormRequest
                 'max:255',
                 'regex:/^[A-Za-z0-9._\-]+$/',
             ],
-            'verification_status' => ['required', Rule::in(['Lengkap', 'Perlu Verifikasi', 'Belum Lengkap'])],
+            /*
+             * Status verifikasi tidak lagi dipilih pengunggah. Petugas yang
+             * mengunggah tidak semestinya menilai berkasnya sendiri; status
+             * ditentukan sistem saat unggah, lalu diputuskan Supervisor.
+             */
             'uploaded_at' => ['required', 'date', 'before_or_equal:today'],
             'uploaded_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'notes' => ['nullable', 'string', 'max:1000'],
@@ -51,7 +55,6 @@ class RefugeeDocumentUpsertRequest extends FormRequest
             'file_name.required' => 'Isi nama berkas, atau pilih berkas yang akan diunggah.',
             'file_name.regex' => 'Nama file hanya boleh berisi huruf, angka, titik, garis bawah, dan tanda hubung.',
             'document_type.in' => 'Jenis dokumen hanya Kartu Pengungsi atau Kartu Wajib Lapor.',
-            'verification_status.in' => 'Status verifikasi harus Lengkap, Perlu Verifikasi, atau Belum Lengkap.',
             'uploaded_at.required' => 'Tanggal unggah wajib diisi.',
             'uploaded_at.before_or_equal' => 'Tanggal unggah tidak boleh melewati hari ini.',
             'uploaded_file.mimes' => 'File unggahan harus berupa PDF, JPG, JPEG, atau PNG.',
@@ -65,7 +68,6 @@ class RefugeeDocumentUpsertRequest extends FormRequest
             'refugee_id' => (string) $this->input('refugee_id'),
             'document_type' => (string) $this->input('document_type'),
             'file_name' => (string) $this->input('file_name'),
-            'verification_status' => (string) $this->input('verification_status'),
             'uploaded_at' => $this->input('uploaded_at'),
             'notes' => $this->input('notes'),
         ];

@@ -49,6 +49,7 @@ abstract class Controller
             'canDeletePlacements' => $roleAccess->can('full-access'),
             'canManageDocuments' => $roleAccess->can('manage-documents'),
             'canDeleteDocuments' => $roleAccess->can('full-access'),
+            'canVerifyDocuments' => $roleAccess->can('verify-documents'),
             'canReviewChanges' => $roleAccess->can('review-changes'),
             'canViewReports' => $roleAccess->can('view-reports'),
             'canManageSettings' => $roleAccess->can('manage-settings'),

@@ -1,7 +1,6 @@
 @php
     $selectedRefugee = old('refugee_id', $document->refugee_id ?? '');
     $selectedType = old('document_type', $document->document_type ?? '');
-    $selectedStatus = old('verification_status', $document->verification_status ?? '');
 @endphp
 
 <form method="POST" action="{{ $formAction }}" enctype="multipart/form-data" novalidate>
@@ -51,16 +50,6 @@
                 @error('uploaded_file')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
             </div>
             <div>
-                <label class="table-meta" for="kolom-verification-status">Status Verifikasi</label>
-                <select id="kolom-verification-status" class="control" name="verification_status" required>
-                    <option value="">Pilih status</option>
-                    @foreach ($statusOptions as $item)
-                        <option value="{{ $item }}" @selected($selectedStatus === $item)>{{ $item }}</option>
-                    @endforeach
-                </select>
-                @error('verification_status')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
-            </div>
-            <div>
                 <label class="table-meta" for="kolom-uploaded-at">Tanggal Unggah</label>
                 <input id="kolom-uploaded-at" class="control" type="date" name="uploaded_at" value="{{ old('uploaded_at', optional($document->uploaded_at ?? null)->format('Y-m-d')) }}" required>
                 @error('uploaded_at')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
@@ -78,6 +67,7 @@
                 <li>Nama berkas terisi otomatis setelah file diunggah, jadi tidak perlu diketik.</li>
                 <li>Tanpa mengunggah file baru, berkas yang sudah tersimpan tetap dipertahankan.</li>
                 <li>Kode referensi boleh dikosongkan; sistem akan membuatkannya.</li>
+                <li>Status verifikasi diisi otomatis: berkas yang diunggah berstatus <strong>Perlu Verifikasi</strong> sampai Supervisor memeriksanya.</li>
             </ul>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;">

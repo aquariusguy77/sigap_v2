@@ -16,7 +16,7 @@
             <div class="highlight-card">
                 <div class="highlight-head">
                     <strong>Tindakan</strong>
-                    <span class="mini-badge success">Siap diverifikasi</span>
+                    <span class="mini-badge {{ ($documentView['verification_status'] ?? '') === 'Lengkap' ? 'success' : '' }}">{{ $documentView['verification_status'] ?? '-' }}</span>
                 </div>
                 <p><a href="{{ route('documents.index') }}" style="color:#fff;">Kembali ke daftar dokumen</a></p>
                 @if ($canManageDocuments)
@@ -76,4 +76,28 @@
             </div>
         </div>
     </section>
+    @if ($canVerifyDocuments)
+        <section class="panel">
+            <div class="section-head">
+                <div>
+                    <span class="section-tag"><x-icon name="shield" class="chip-icon" />Verifikasi Supervisor</span>
+                    <h3>Periksa berkas ini</h3>
+                    <p class="section-intro">Buka dan periksa berkasnya, lalu terima atau kembalikan ke petugas.</p>
+                </div>
+                <span class="badge">{{ $documentView['verification_status'] ?? '-' }}</span>
+            </div>
+            <form method="POST" action="{{ route('documents.verify', $document) }}">
+                @csrf
+                @method('PATCH')
+                <label class="table-meta" for="kolom-verify-notes">Catatan (wajib bila dikembalikan)</label>
+                <textarea id="kolom-verify-notes" class="control" name="notes" rows="3" style="width:100%;resize:vertical;" maxlength="1000">{{ old('notes') }}</textarea>
+                @error('notes')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
+                @error('decision')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
+                    <button class="btn btn-gold" type="submit" name="decision" value="Lengkap">Terima — Lengkap</button>
+                    <button class="btn btn-ghost" type="submit" name="decision" value="Belum Lengkap">Kembalikan — Belum Lengkap</button>
+                </div>
+            </form>
+        </section>
+    @endif
 @endsection

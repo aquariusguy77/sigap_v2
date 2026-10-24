@@ -69,6 +69,13 @@ Route::middleware(EnsureSigapAuthenticated::class)->group(function (): void {
     Route::put('/dokumen/{document}', [DocumentController::class, 'update'])
         ->middleware(EnsureSigapAbility::class . ':manage-documents')
         ->name('documents.update');
+    /*
+     * Supervisor memegang verify-documents tetapi tidak manage-documents,
+     * jadi verifikasi punya rute sendiri, terpisah dari form ubah dokumen.
+     */
+    Route::patch('/dokumen/{document}/verifikasi', [DocumentController::class, 'verify'])
+        ->middleware(EnsureSigapAbility::class . ':verify-documents')
+        ->name('documents.verify');
     Route::delete('/dokumen/{document}', [DocumentController::class, 'destroy'])
         ->middleware(EnsureSigapAbility::class . ':full-access')
         ->name('documents.destroy');

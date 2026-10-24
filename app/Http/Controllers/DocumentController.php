@@ -12,7 +12,9 @@ use App\Http\Requests\RefugeeDocumentUpsertRequest;
 use App\Services\FirebaseStorageService;
 use App\Services\SigapDataService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -60,7 +62,6 @@ class DocumentController extends Controller
             'formMethod' => 'POST',
             'refugees' => $this->sigapDataService->refugeeSelectOptions(),
             'documentTypes' => $this->sigapDataService->documentTypeOptions(),
-            'statusOptions' => $this->sigapDataService->documentStatusOptions(),
         ]);
 
         return view('documents.create', $data);
@@ -103,6 +104,8 @@ class DocumentController extends Controller
             'reason' => 'Unggah dokumen baru',
         ]);
 
+        $this->syncRefugeeDocumentStatus((string) $document->refugee_id);
+
         return redirect()
             ->route('documents.index')
             ->with('status', 'Dokumen berhasil disimpan.');
@@ -120,7 +123,6 @@ class DocumentController extends Controller
             'formMethod' => 'PUT',
             'refugees' => $this->sigapDataService->refugeeSelectOptions(),
             'documentTypes' => $this->sigapDataService->documentTypeOptions(),
-            'statusOptions' => $this->sigapDataService->documentStatusOptions(),
         ]);
 
         return view('documents.edit', $data);
@@ -150,9 +152,66 @@ class DocumentController extends Controller
             'reason' => 'Pembaruan keterangan dokumen',
         ]);
 
+        $this->syncRefugeeDocumentStatus((string) $updated->refugee_id);
+
+        if ((string) $existing->refugee_id !== (string) $updated->refugee_id) {
+            $this->syncRefugeeDocumentStatus((string) $existing->refugee_id);
+        }
+
         return redirect()
             ->route('documents.index')
             ->with('status', 'Dokumen berhasil diperbarui.');
+    }
+
+    /**
+     * Keputusan Supervisor atas sebuah berkas: diterima atau dikembalikan.
+     */
+    public function verify(Request $request, string $document): RedirectResponse
+    {
+        $this->ensureAbility('verify-documents');
+        $existing = $this->findOrFail($document);
+
+        $validated = $request->validate([
+            'decision' => ['required', Rule::in(['Lengkap', 'Belum Lengkap'])],
+            'notes' => ['nullable', 'required_if:decision,Belum Lengkap', 'string', 'max:1000'],
+        ], [
+            'decision.in' => 'Pilih Terima atau Kembalikan.',
+            'notes.required_if' => 'Tuliskan alasan berkas dikembalikan agar petugas tahu yang perlu diperbaiki.',
+        ]);
+
+        if ($validated['decision'] === 'Lengkap' && blank($existing->file_path) && blank($existing->storage_key)) {
+            return back()->withErrors(['decision' => 'Berkas belum diunggah, jadi belum bisa dinyatakan lengkap.']);
+        }
+
+        $payload = ['verification_status' => $validated['decision']];
+
+        if (filled($validated['notes'] ?? null)) {
+            $payload['notes'] = $validated['notes'];
+        }
+
+        try {
+            $updated = $this->documents->update($document, $payload);
+        } catch (FirebaseWriteException $e) {
+            return back()->withErrors(['decision' => $e->getMessage()]);
+        }
+
+        $this->audits->record([
+            'refugee_id' => $existing->refugee_id,
+            'field_name' => 'Verifikasi Dokumen',
+            'old_value' => $existing->verification_status,
+            'new_value' => $updated->verification_status,
+            'action_label' => $validated['decision'] === 'Lengkap' ? 'Dokumen diverifikasi' : 'Dokumen dikembalikan',
+            'performed_by_name' => $this->currentActorName(),
+            'reason' => $validated['notes'] ?? 'Pemeriksaan berkas oleh supervisor',
+        ]);
+
+        $this->syncRefugeeDocumentStatus((string) $existing->refugee_id);
+
+        return redirect()
+            ->route('documents.show', $document)
+            ->with('status', $validated['decision'] === 'Lengkap'
+                ? 'Dokumen dinyatakan lengkap.'
+                : 'Dokumen dikembalikan ke petugas untuk diperbaiki.');
     }
 
     /**
@@ -210,6 +269,8 @@ class DocumentController extends Controller
             'reason' => 'Penghapusan dokumen',
         ]);
 
+        $this->syncRefugeeDocumentStatus((string) $existing->refugee_id);
+
         return redirect()
             ->route('documents.index')
             ->with('status', 'Dokumen berhasil dihapus.');
@@ -239,6 +300,9 @@ class DocumentController extends Controller
             $payload['drive_file_id'] = $stored['firebase_document_key'];
             $payload['storage_key'] = $stored['storage_key'] ?? null;
 
+            // Berkas baru selalu menunggu pemeriksaan Supervisor.
+            $payload['verification_status'] = 'Perlu Verifikasi';
+
             // Berkas lama tidak lagi dirujuk siapa pun, jadi tidak perlu disimpan.
             if ($existing !== null) {
                 $this->firebaseStorage->forgetFromRealtimeDatabase($existing->storage_key);
@@ -250,6 +314,11 @@ class DocumentController extends Controller
             $payload['download_url'] = $existing->download_url;
             $payload['drive_file_id'] = $existing->drive_file_id;
             $payload['storage_key'] = $existing->storage_key;
+            // Mengubah keterangan saja tidak mengubah hasil verifikasi.
+            $payload['verification_status'] = $existing->verification_status;
+        } else {
+            // Dicatat tanpa berkas: belum ada yang bisa diperiksa.
+            $payload['verification_status'] = 'Belum Lengkap';
         }
 
         $refugee = filled($payload['refugee_id'] ?? null)
@@ -259,6 +328,48 @@ class DocumentController extends Controller
         $payload['uploaded_by'] = $this->currentActorName();
 
         return $payload;
+    }
+
+    /**
+     * Menyelaraskan status kelengkapan dokumen pada data pengungsi.
+     *
+     * Lengkap bila setiap jenis dokumen wajib punya berkas yang sudah
+     * diterima Supervisor, Perlu Verifikasi bila semuanya ada tetapi masih
+     * ada yang menunggu pemeriksaan, selain itu Belum Lengkap.
+     */
+    protected function syncRefugeeDocumentStatus(string $refugeeId): void
+    {
+        if ($refugeeId === '' || $this->refugees->find($refugeeId) === null) {
+            return;
+        }
+
+        $berkas = $this->documents->all()
+            ->filter(fn (Record $item) => (string) $item->refugee_id === $refugeeId)
+            ->groupBy(fn (Record $item) => (string) $item->document_type)
+            ->map(function ($items) {
+                $statuses = $items->pluck('verification_status')->all();
+
+                return match (true) {
+                    in_array('Lengkap', $statuses, true) => 'Lengkap',
+                    in_array('Perlu Verifikasi', $statuses, true) => 'Perlu Verifikasi',
+                    default => 'Belum Lengkap',
+                };
+            });
+
+        $wajib = config('sigap.reference.document_types', []);
+        $statuses = collect($wajib)->map(fn (string $type) => $berkas->get($type, 'Belum Lengkap'));
+
+        $status = match (true) {
+            $statuses->contains('Belum Lengkap') => 'Belum Lengkap',
+            $statuses->contains('Perlu Verifikasi') => 'Perlu Verifikasi',
+            default => 'Lengkap',
+        };
+
+        try {
+            $this->refugees->update($refugeeId, ['document_status' => $status]);
+        } catch (FirebaseWriteException) {
+            // Ringkasan ini turunan; dokumennya sendiri sudah tersimpan.
+        }
     }
 
     protected function findOrFail(string $id): Record
