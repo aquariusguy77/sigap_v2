@@ -2,7 +2,7 @@
     <div class="subtle-box" style="margin-top:0;">
         <h4>Berkas yang dikumpulkan</h4>
         <ul>
-            <li>Unggah berkasnya sekarang, atau lewati dan tambahkan nanti lewat menu <strong>Dokumen</strong>.</li>
+            <li>Unggah berkasnya sekarang, atau lewati dan lengkapi nanti lewat menu <strong>Dokumen</strong>. Berkas yang dilewati tetap tercatat di sana sebagai <strong>Belum Lengkap</strong>.</li>
             <li>Format yang diterima: PDF, JPG, atau PNG, maksimal 5 MB per berkas.</li>
             <li>Berkas yang baru diunggah berstatus <strong>Perlu Verifikasi</strong> sampai supervisor memeriksanya.</li>
         </ul>

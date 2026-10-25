@@ -10,6 +10,7 @@ use App\Firebase\Record;
 use App\Firebase\RefugeeRepository;
 use App\Http\Requests\RefugeeDocumentUpsertRequest;
 use App\Services\FirebaseStorageService;
+use App\Services\RefugeeRecordSync;
 use App\Services\RoleAccessService;
 use App\Services\SigapDataService;
 use Illuminate\Http\RedirectResponse;
@@ -336,46 +337,9 @@ class DocumentController extends Controller
         return $payload;
     }
 
-    /**
-     * Menyelaraskan status kelengkapan dokumen pada data pengungsi.
-     *
-     * Lengkap bila setiap jenis dokumen wajib punya berkas yang sudah
-     * diterima Supervisor, Perlu Verifikasi bila semuanya ada tetapi masih
-     * ada yang menunggu pemeriksaan, selain itu Belum Lengkap.
-     */
     protected function syncRefugeeDocumentStatus(string $refugeeId): void
     {
-        if ($refugeeId === '' || $this->refugees->find($refugeeId) === null) {
-            return;
-        }
-
-        $berkas = $this->documents->all()
-            ->filter(fn (Record $item) => (string) $item->refugee_id === $refugeeId)
-            ->groupBy(fn (Record $item) => (string) $item->document_type)
-            ->map(function ($items) {
-                $statuses = $items->pluck('verification_status')->all();
-
-                return match (true) {
-                    in_array('Lengkap', $statuses, true) => 'Lengkap',
-                    in_array('Perlu Verifikasi', $statuses, true) => 'Perlu Verifikasi',
-                    default => 'Belum Lengkap',
-                };
-            });
-
-        $wajib = config('sigap.reference.document_types', []);
-        $statuses = collect($wajib)->map(fn (string $type) => $berkas->get($type, 'Belum Lengkap'));
-
-        $status = match (true) {
-            $statuses->contains('Belum Lengkap') => 'Belum Lengkap',
-            $statuses->contains('Perlu Verifikasi') => 'Perlu Verifikasi',
-            default => 'Lengkap',
-        };
-
-        try {
-            $this->refugees->update($refugeeId, ['document_status' => $status]);
-        } catch (FirebaseWriteException) {
-            // Ringkasan ini turunan; dokumennya sendiri sudah tersimpan.
-        }
+        app(RefugeeRecordSync::class)->syncDocumentStatus($refugeeId);
     }
 
     protected function findOrFail(string $id): Record

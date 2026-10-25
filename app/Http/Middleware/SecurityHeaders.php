@@ -29,7 +29,12 @@ class SecurityHeaders
             'X-Frame-Options' => 'DENY',
             'X-Content-Type-Options' => 'nosniff',
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
-            'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
+            /*
+             * geolocation=(self): tombol "Pakai lokasi saya sekarang" pada
+             * pemilih titik rumah pengungsi mandiri. Tetap tertutup bagi
+             * situs lain; kamera dan mikrofon tetap dimatikan.
+             */
+            'Permissions-Policy' => 'camera=(), microphone=(), geolocation=(self)',
             'Content-Security-Policy' => "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
         ];
 

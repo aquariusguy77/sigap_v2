@@ -4,12 +4,17 @@ namespace App\Http\Requests;
 
 use App\Firebase\Record;
 use App\Firebase\RefugeeRepository;
+use App\Http\Requests\Concerns\ReadsCoordinates;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class RefugeeUpsertRequest extends FormRequest
 {
+    use ReadsCoordinates;
+
+    public const LOKASI_MANDIRI = 'Pengungsi Mandiri';
+
     public function authorize(): bool
     {
         return true;
@@ -33,6 +38,22 @@ class RefugeeUpsertRequest extends FormRequest
             'location' => ['required', Rule::in(config('sigap.reference.refugee_locations', []))],
 
             /*
+             * Tempat tinggal pengungsi mandiri, dicatat langsung dari formulir
+             * ini dan disimpan sebagai data Penempatan. Aturannya sama dengan
+             * formulir Penempatan supaya hasil keduanya tidak berbeda.
+             */
+            'address' => [
+                Rule::requiredIf(fn () => $this->input('location') === self::LOKASI_MANDIRI),
+                'nullable',
+                'string',
+                'min:10',
+                'max:500',
+            ],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'coordinate_paste' => ['nullable', 'string', 'max:500'],
+
+            /*
              * Berkas yang boleh diunggah sekalian dari formulir ini, satu
              * kolom untuk tiap jenis dokumen. Semuanya opsional: petugas boleh
              * menyimpan datanya dulu lalu mengunggah berkasnya belakangan
@@ -53,6 +74,14 @@ class RefugeeUpsertRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
+            // Satu koordinat tanpa pasangannya tidak menunjuk ke mana pun.
+            if (filled($this->input('latitude')) xor filled($this->input('longitude'))) {
+                $validator->errors()->add(
+                    'latitude',
+                    'Lintang dan bujur harus diisi berpasangan, atau dikosongkan keduanya.'
+                );
+            }
+
             $internalId = (string) $this->input('internal_id');
 
             if ($internalId === '') {
@@ -74,6 +103,24 @@ class RefugeeUpsertRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $mandiri = trim((string) $this->input('location')) === self::LOKASI_MANDIRI;
+
+        // Kolom tempel diproses lebih dulu, tanpa menimpa lintang dan bujur yang sudah terisi.
+        if ($mandiri && blank($this->input('latitude')) && blank($this->input('longitude'))) {
+            $parsed = $this->parseCoordinate((string) $this->input('coordinate_paste', ''));
+
+            if ($parsed !== null) {
+                $this->merge(['latitude' => $parsed[0], 'longitude' => $parsed[1]]);
+            }
+        }
+
+        // Alamat dan titik hanya milik pengungsi mandiri.
+        $this->merge([
+            'address' => $mandiri ? trim((string) $this->input('address')) : null,
+            'latitude' => $mandiri ? $this->blankToNull($this->input('latitude')) : null,
+            'longitude' => $mandiri ? $this->blankToNull($this->input('longitude')) : null,
+        ]);
+
         $this->merge([
             'internal_id' => strtoupper(trim((string) $this->input('internal_id'))),
             'name' => trim((string) $this->input('name')),
@@ -99,6 +146,10 @@ class RefugeeUpsertRequest extends FormRequest
             'documents.*.file.max' => 'Ukuran tiap berkas dokumen maksimal 5 MB.',
             'location.in' => 'Lokasi harus CH Puspa Agro, CH Green Bamboo, atau Pengungsi Mandiri.',
             'registered_at.before_or_equal' => 'Tanggal registrasi tidak boleh melewati hari ini.',
+            'address.required' => 'Alamat tempat tinggal wajib diisi untuk pengungsi mandiri.',
+            'address.min' => 'Tulis alamat selengkap mungkin agar petugas dapat menemukannya di lapangan.',
+            'latitude.numeric' => 'Lintang harus berupa angka, contohnya -7.348123.',
+            'longitude.numeric' => 'Bujur harus berupa angka, contohnya 112.727456.',
         ];
     }
 
@@ -129,6 +180,26 @@ class RefugeeUpsertRequest extends FormRequest
             'location' => $this->input('location'),
             'notes' => $this->input('notes'),
             'registered_at' => $this->input('registered_at'),
+        ];
+    }
+
+    /**
+     * Data penempatan yang diturunkan dari kolom Lokasi Aktif.
+     *
+     * Community House dipilih langsung dari daftar lokasi, sedangkan
+     * "Pengungsi Mandiri" membawa alamat dan titik peta dari langkah yang sama.
+     */
+    public function placementPayload(): array
+    {
+        $location = (string) $this->input('location');
+        $mandiri = $location === self::LOKASI_MANDIRI;
+
+        return [
+            'category' => $mandiri ? 'mandiri' : 'iom',
+            'community_house' => $mandiri ? null : $location,
+            'address' => $mandiri ? (string) $this->input('address') : null,
+            'latitude' => $mandiri ? $this->input('latitude') : null,
+            'longitude' => $mandiri ? $this->input('longitude') : null,
         ];
     }
 }

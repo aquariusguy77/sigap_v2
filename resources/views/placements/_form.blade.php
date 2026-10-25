@@ -57,58 +57,11 @@
         </div>
 
         {{-- Hanya untuk pengungsi mandiri --}}
-        <div class="mandiri-only-field" style="margin-top:18px;">
-            <label class="table-meta" for="placementAddress">Alamat Tempat Tinggal</label>
-            <textarea class="control" name="address" id="placementAddress" rows="3" style="width:100%;resize:vertical;" maxlength="500" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota">{{ old('address', $placement->address ?? '') }}</textarea>
-            <div class="table-meta" style="margin-top:6px;">Tulis selengkap mungkin. Alamat inilah yang dipakai petugas untuk menemukan rumahnya saat pengawasan lapangan.</div>
-            @error('address')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
-        </div>
-
-        <div class="mandiri-only-field" style="margin-top:18px;">
-            <label class="table-meta" for="coordinatePaste">Titik Lokasi <span style="opacity:.7;">(opsional)</span></label>
-            <input class="control" type="text" id="coordinatePaste" name="coordinate_paste"
-                   value="{{ old('coordinate_paste') }}"
-                   placeholder="Tempel di sini: -7.348123, 112.727456 atau tautan Google Maps">
-            <div class="table-meta" style="margin-top:6px;">
-                Buka Google Maps di titik rumah pengungsi, tekan lama pada titiknya, lalu salin
-                koordinat yang muncul dan tempel di kolom ini. Lintang dan bujur akan terisi sendiri.
-            </div>
-            @error('coordinate_paste')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
-        </div>
-
-        {{--
-            Peta pemilih titik. Hanya muncul bila pustaka petanya berhasil
-            dimuat; tanpa itu, kolom tempel dan kedua kolom angka di bawah
-            tetap dapat dipakai seperti biasa.
-        --}}
-        <div class="mandiri-only-field" id="pickerWrap" style="margin-top:14px;display:none;">
-            <div id="pickerMap" style="height:280px;border-radius:12px;border:1px solid var(--line);"></div>
-            <div class="table-meta" style="margin-top:6px;">
-                Ketuk peta untuk menetapkan titik rumah, atau geser penandanya. Gulir untuk memperbesar.
-            </div>
-        </div>
-
-        <div class="double-grid mandiri-only-field" style="margin-top:14px;">
-            <div>
-                <label class="table-meta" for="latitudeInput">Lintang</label>
-                <input class="control" type="text" name="latitude" id="latitudeInput" inputmode="decimal" value="{{ old('latitude', $placement->latitude ?? '') }}" placeholder="-7.348123">
-                @error('latitude')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
-            </div>
-            <div>
-                <label class="table-meta" for="longitudeInput">Bujur</label>
-                <input class="control" type="text" name="longitude" id="longitudeInput" inputmode="decimal" value="{{ old('longitude', $placement->longitude ?? '') }}" placeholder="112.727456">
-                @error('longitude')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
-            </div>
-        </div>
-
-        <div class="subtle-box mandiri-only-field" style="margin-top:14px;">
-            <h4>Kalau titiknya dikosongkan</h4>
-            <ul>
-                <li>Data tetap tersimpan, dan tombol petunjuk arah tetap dapat dipakai.</li>
-                <li>Google Maps akan mencarinya dari alamat, sehingga ketelitiannya bergantung pada kelengkapan alamat.</li>
-                <li>Peta kecil pada halaman detail hanya muncul bila titiknya sudah ditetapkan.</li>
-            </ul>
-        </div>
+        @include('partials._pemilih-titik', [
+            'alamat' => $placement->address ?? '',
+            'lintang' => $placement->latitude ?? '',
+            'bujur' => $placement->longitude ?? '',
+        ])
 
         <div class="double-grid" style="margin-top:18px;">
             <div>
@@ -171,149 +124,10 @@
             if (hint) hint.textContent = descriptions[select?.value] || '';
         };
 
-        select?.addEventListener('change', apply);
+        select?.addEventListener('change', () => {
+            apply();
+            window.__sigapUkurUlangPeta?.();
+        });
         apply();
-
-        // ---- Kolom tempel koordinat -------------------------------------
-        const paste = document.getElementById('coordinatePaste');
-        const latInput = document.getElementById('latitudeInput');
-        const lngInput = document.getElementById('longitudeInput');
-
-        /*
-         * Pola yang sama dengan yang dipakai di sisi server, supaya hasilnya
-         * konsisten baik JavaScript aktif maupun tidak.
-         */
-        const bacaKoordinat = (teks) => {
-            const t = (teks || '').trim();
-            if (!t) return null;
-            const url = t.match(/@(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)/);
-            if (url) return [url[1], url[2]];
-            const pasangan = t.match(/(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
-            return pasangan ? [pasangan[1], pasangan[2]] : null;
-        };
-
-        const terapkanTempelan = () => {
-            const titik = bacaKoordinat(paste?.value);
-            if (!titik) return null;
-            if (latInput) latInput.value = titik[0];
-            if (lngInput) lngInput.value = titik[1];
-            return titik;
-        };
-
-        paste?.addEventListener('input', () => {
-            const titik = terapkanTempelan();
-            if (titik && window.__sigapPindahkanPenanda) {
-                window.__sigapPindahkanPenanda(parseFloat(titik[0]), parseFloat(titik[1]));
-            }
-        });
-    })();
-</script>
-
-{{--
-    Pemilih titik di atas peta. Pustaka Leaflet dimuat dari CDN dan peta
-    dasarnya dari OpenStreetMap, keduanya tanpa kunci API maupun biaya.
-
-    Seluruh blok ini bersifat tambahan. Bila CDN tidak dapat dijangkau,
-    petanya tidak ditampilkan sama sekali dan pengisian koordinat tetap
-    berjalan lewat kolom tempel dan kedua kolom angka.
---}}
-{{--
-    crossorigin="anonymous" membuat peramban mengambil berkas ini tanpa
-    menyertakan kuki maupun kredensial apa pun ke cdnjs, dan merupakan syarat
-    agar atribut integrity dapat diperiksa sama sekali.
-
-    referrerpolicy="no-referrer" mencegah alamat halaman ini — yang memuat
-    id penempatan — ikut terkirim ke pihak ketiga.
-
-    Atribut integrity sengaja BELUM diisi. Nilainya berupa hash SHA-384 dari
-    isi berkasnya, dan mengisinya dengan nilai yang salah akan membuat
-    peramban menolak memuat Leaflet sama sekali. Untuk mengisinya, jalankan:
-
-        curl -s https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css \
-          | openssl dgst -sha384 -binary | openssl base64 -A
-
-        curl -s https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js \
-          | openssl dgst -sha384 -binary | openssl base64 -A
-
-    lalu tempelkan hasilnya sebagai integrity="sha384-HASIL" pada baris yang
-    bersangkutan. Halaman cdnjs untuk Leaflet juga menyediakan nilai yang
-    sama lewat tombol salin.
---}}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
-      crossorigin="anonymous" referrerpolicy="no-referrer">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-    (() => {
-        if (typeof L === 'undefined') {
-            return;
-        }
-
-        const wrap = document.getElementById('pickerWrap');
-        const el = document.getElementById('pickerMap');
-        const latInput = document.getElementById('latitudeInput');
-        const lngInput = document.getElementById('longitudeInput');
-
-        if (!wrap || !el || !latInput || !lngInput) {
-            return;
-        }
-
-        wrap.style.display = '';
-
-        // Titik awal: koordinat yang sudah tersimpan, atau pusat Kota Surabaya.
-        const awalLat = parseFloat(latInput.value) || -7.2575;
-        const awalLng = parseFloat(lngInput.value) || 112.7521;
-        const sudahAda = !!(parseFloat(latInput.value) && parseFloat(lngInput.value));
-
-        const map = L.map(el).setView([awalLat, awalLng], sudahAda ? 17 : 12);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; Kontributor OpenStreetMap',
-        }).addTo(map);
-
-        let marker = null;
-
-        const tulisKolom = (lat, lng) => {
-            latInput.value = lat.toFixed(6);
-            lngInput.value = lng.toFixed(6);
-        };
-
-        const pindahkan = (lat, lng, geser = true) => {
-            if (marker) {
-                marker.setLatLng([lat, lng]);
-            } else {
-                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-                marker.on('dragend', () => {
-                    const p = marker.getLatLng();
-                    tulisKolom(p.lat, p.lng);
-                });
-            }
-            tulisKolom(lat, lng);
-            if (geser) map.setView([lat, lng], Math.max(map.getZoom(), 17));
-        };
-
-        if (sudahAda) {
-            pindahkan(awalLat, awalLng, false);
-        }
-
-        map.on('click', (e) => pindahkan(e.latlng.lat, e.latlng.lng, false));
-
-        // Dipakai kolom tempel agar penanda ikut berpindah.
-        window.__sigapPindahkanPenanda = (lat, lng) => {
-            if (!isNaN(lat) && !isNaN(lng)) pindahkan(lat, lng);
-        };
-
-        /*
-         * Peta yang dibangun saat panelnya masih tersembunyi akan salah ukur.
-         * Ukuran dihitung ulang begitu panel mandiri benar-benar terlihat.
-         */
-        const kategori = document.getElementById('placementCategory');
-        const hitungUlang = () => setTimeout(() => map.invalidateSize(), 60);
-        kategori?.addEventListener('change', hitungUlang);
-        document.querySelectorAll('[data-step-target]').forEach((tombol) => {
-            tombol.addEventListener('click', hitungUlang);
-        });
-        hitungUlang();
     })();
 </script>

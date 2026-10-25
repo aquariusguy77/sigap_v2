@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\DocumentUploadException;
 use App\Exceptions\FirebaseWriteException;
 use App\Firebase\AuditTrailRepository;
 use App\Firebase\DocumentRepository;
@@ -11,11 +10,11 @@ use App\Firebase\RefugeeRepository;
 use App\Http\Requests\RefugeeFilterRequest;
 use App\Http\Requests\RefugeeUpsertRequest;
 use App\Services\FirebaseStorageService;
+use App\Services\RefugeeRecordSync;
 use App\Services\SigapDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\View\View;
-use Throwable;
 
 class RefugeeController extends Controller
 {
@@ -24,7 +23,8 @@ class RefugeeController extends Controller
         protected RefugeeRepository $refugees,
         protected AuditTrailRepository $audits,
         protected DocumentRepository $documents,
-        protected FirebaseStorageService $firebaseStorage
+        protected FirebaseStorageService $firebaseStorage,
+        protected RefugeeRecordSync $recordSync
     ) {
     }
 
@@ -91,7 +91,7 @@ class RefugeeController extends Controller
             'reason' => 'Input data baru',
         ]);
 
-        $upload = $this->storeAttachedDocuments($refugee, $request);
+        $upload = $this->syncRelatedRecords($refugee, $request);
 
         return redirect()
             ->route('refugees.index')
@@ -100,59 +100,55 @@ class RefugeeController extends Controller
     }
 
     /**
-     * Menyimpan berkas yang ikut diunggah dari formulir data pengungsi.
+     * Menyimpan penempatan dan dokumen yang diisi dari formulir data pengungsi.
      *
      * Data pengungsinya sudah tersimpan sebelum metode ini dipanggil, jadi
-     * kegagalan satu berkas tidak boleh membatalkan apa pun. Yang gagal
+     * kegagalan di sini tidak boleh membatalkan apa pun. Yang gagal
      * dilaporkan apa adanya agar petugas tahu mana yang perlu diulang lewat
-     * menu Dokumen, alih-alih mengira semuanya sudah masuk.
+     * menu Penempatan atau Dokumen, alih-alih mengira semuanya sudah masuk.
      *
      * @return array{summary:string, errors:array<int, string>}
      */
-    protected function storeAttachedDocuments(Record $refugee, RefugeeUpsertRequest $request): array
+    protected function syncRelatedRecords(Record $refugee, RefugeeUpsertRequest $request): array
     {
-        $tersimpan = 0;
         $errors = [];
+
+        try {
+            $result = $this->recordSync->syncPlacement($refugee, $request->placementPayload());
+            $placement = $result['placement'];
+
+            if ($result['created'] || $result['old_location'] !== $placement->location_name) {
+                $this->audits->record([
+                    'refugee_id' => $refugee->id,
+                    'field_name' => 'Penempatan',
+                    'old_value' => $result['old_location'],
+                    'new_value' => $placement->location_name,
+                    'action_label' => $result['created'] ? 'Penempatan ditambahkan' : 'Penempatan diperbarui',
+                    'performed_by_name' => $this->currentActorName(),
+                    'reason' => 'Dicatat dari formulir data pengungsi',
+                ]);
+            }
+        } catch (FirebaseWriteException $e) {
+            $errors[] = 'Penempatan: ' . $e->getMessage();
+        }
+
+        $files = [];
 
         foreach ((array) $request->input('documents', []) as $index => $entry) {
             $file = $request->file("documents.{$index}.file");
 
-            if (! $file instanceof UploadedFile) {
-                continue;
-            }
-
-            $type = (string) ($entry['type'] ?? 'Dokumen');
-
-            try {
-                $stored = $this->firebaseStorage->storeDocument($file, $type);
-
-                $this->documents->create([
-                    'refugee_id' => $refugee->id,
-                    'refugee_name' => $refugee->name,
-                    'document_type' => $type,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $stored['path'],
-                    'download_url' => $stored['download_url'] ?? null,
-                    'drive_file_id' => $stored['firebase_document_key'],
-                    'storage_key' => $stored['storage_key'] ?? null,
-                    'verification_status' => 'Perlu Verifikasi',
-                    'uploaded_at' => now()->toIso8601String(),
-                    'uploaded_by' => $this->currentActorName(),
-                    'notes' => 'Diunggah bersamaan dengan pendaftaran data pengungsi.',
-                ]);
-
-                $tersimpan++;
-            } catch (DocumentUploadException | FirebaseWriteException $e) {
-                $errors[] = $type . ': ' . $e->getMessage();
-            } catch (Throwable $e) {
-                $errors[] = $type . ': berkas gagal disimpan.';
+            if ($file instanceof UploadedFile) {
+                $files[(string) ($entry['type'] ?? 'Dokumen')] = $file;
             }
         }
 
+        $upload = $this->recordSync->syncDocuments($refugee, $files, $this->currentActorName());
+        $errors = array_merge($errors, $upload['errors']);
+
         $summary = match (true) {
-            $tersimpan > 0 && $errors === [] => ' ' . $tersimpan . ' berkas dokumen ikut terunggah.',
-            $tersimpan > 0 => ' ' . $tersimpan . ' berkas terunggah, sebagian gagal.',
-            $errors !== [] => ' Namun berkas dokumennya gagal diunggah.',
+            $upload['saved'] > 0 && $errors === [] => ' ' . $upload['saved'] . ' berkas dokumen ikut terunggah.',
+            $upload['saved'] > 0 => ' ' . $upload['saved'] . ' berkas terunggah, sebagian data gagal disimpan.',
+            $errors !== [] => ' Namun sebagian data penempatan atau dokumen gagal disimpan.',
             default => '',
         };
 
@@ -168,6 +164,7 @@ class RefugeeController extends Controller
             'pageHeading' => 'Ubah Data Pengungsi',
             'pageDescription' => 'Perbarui identitas, status, lokasi hunian, dan catatan registrasi.',
             'refugee' => $record,
+            'placement' => $this->recordSync->placementFor($refugee),
             'formAction' => route('refugees.update', $refugee),
             'formMethod' => 'PUT',
         ])));
@@ -194,7 +191,7 @@ class RefugeeController extends Controller
             'reason' => 'Pembaruan data operasional',
         ]);
 
-        $upload = $this->storeAttachedDocuments($updated, $request);
+        $upload = $this->syncRelatedRecords($updated, $request);
 
         return redirect()
             ->route('refugees.index')

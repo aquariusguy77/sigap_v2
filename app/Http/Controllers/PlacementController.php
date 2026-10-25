@@ -8,6 +8,7 @@ use App\Firebase\PlacementRepository;
 use App\Firebase\Record;
 use App\Firebase\RefugeeRepository;
 use App\Http\Requests\PlacementUpsertRequest;
+use App\Services\RefugeeRecordSync;
 use App\Services\SigapDataService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -96,6 +97,8 @@ class PlacementController extends Controller
             'reason' => 'Pencatatan lokasi hunian',
         ]);
 
+        app(RefugeeRecordSync::class)->syncRefugeeLocation($placement);
+
         return redirect()
             ->route('placements.index')
             ->with('status', 'Data penempatan berhasil ditambahkan.');
@@ -141,6 +144,8 @@ class PlacementController extends Controller
             'performed_by_name' => $this->currentActorName(),
             'reason' => 'Perubahan lokasi hunian',
         ]);
+
+        app(RefugeeRecordSync::class)->syncRefugeeLocation($updated);
 
         return redirect()
             ->route('placements.index')

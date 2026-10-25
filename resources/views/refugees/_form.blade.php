@@ -12,7 +12,7 @@
     $kolomLangkah = [
         1 => ['internal_id', 'name', 'nationality', 'unhcr_number', 'phone'],
         2 => ['status', 'registered_at', 'notes'],
-        3 => ['location'],
+        3 => ['location', 'address', 'latitude', 'longitude', 'coordinate_paste'],
         4 => ['documents', 'documents.*', 'documents.*.file', 'documents.*.type'],
     ];
     $langkahBergalat = collect($kolomLangkah)
@@ -98,6 +98,11 @@
 
             if (submitButton) {
                 submitButton.style.display = currentStep === 4 ? 'inline-flex' : 'none';
+            }
+
+            // Peta di langkah Penempatan baru bisa diukur setelah panelnya terlihat.
+            if (currentStep === 3) {
+                window.__sigapUkurUlangPeta?.();
             }
         };
 
