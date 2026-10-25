@@ -24,7 +24,7 @@
                 <tbody>
                     @forelse ($history as $item)
                         <tr>
-                            <td><span class="cell-title">{{ $item['title'] }}</span></td>
+                            <td><span class="cell-title">{{ $item['title'] }}</span>@if (filled($item['refugee_name'] ?? null))<div class="table-meta">{{ $item['refugee_name'] }}</div>@endif</td>
                             <td class="table-meta">{{ $item['detail'] }}</td>
                             <td>{{ $item['actor'] }}</td>
                             <td class="table-meta">{{ $item['time'] }}</td>
@@ -52,7 +52,7 @@
                     <article class="timeline-item">
                         <div class="timeline-mark"><x-icon name="history" class="section-icon" /></div>
                         <div>
-                            <strong>{{ $item['title'] }}</strong>
+                            <strong>{{ $item['title'] }}@if (filled($item['refugee_name'] ?? null)) — {{ $item['refugee_name'] }}@endif</strong>
                             <p>{{ $item['detail'] }}</p>
                             <div class="timeline-meta">{{ $item['actor'] }} • {{ $item['time'] }}</div>
                         </div>

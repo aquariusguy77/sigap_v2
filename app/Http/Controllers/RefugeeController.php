@@ -212,6 +212,7 @@ class RefugeeController extends Controller
 
         $this->audits->record([
             'refugee_id' => $refugee,
+            'refugee_name' => $existing->name,
             'field_name' => 'Data pengungsi',
             'old_value' => $existing->internal_id,
             'action_label' => 'Data pengungsi dihapus',

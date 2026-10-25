@@ -12,6 +12,8 @@ class AuditTrailRepository extends Repository
 
     protected array $fields = [
         'refugee_id',
+        // Salinan nama saat kejadian, supaya riwayat tetap terbaca setelah datanya dihapus.
+        'refugee_name',
         'field_name',
         'old_value',
         'new_value',
@@ -32,6 +34,13 @@ class AuditTrailRepository extends Repository
     public function record(array $payload): void
     {
         try {
+            if (blank($payload['refugee_name'] ?? null) && filled($payload['refugee_id'] ?? null)) {
+                $refugee = $this->firebase->fetchNode(
+                    $this->firebase->path('refugees') . '/' . $payload['refugee_id']
+                );
+                $payload['refugee_name'] = is_array($refugee) ? ($refugee['name'] ?? null) : null;
+            }
+
             $this->create(array_merge([
                 'action_label' => 'Perubahan data',
                 'performed_by_name' => 'Sistem',

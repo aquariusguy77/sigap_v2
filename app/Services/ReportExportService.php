@@ -80,7 +80,7 @@ class ReportExportService
         return match ($key) {
             'dokumen' => ['Jenis Dokumen', 'Pengungsi', 'Nama Berkas', 'Status Verifikasi', 'Tanggal Unggah'],
             'penempatan' => ['Pengungsi', 'Kategori', 'Lokasi / Alamat', 'Titik Koordinat', 'Masuk', 'Keluar', 'Status'],
-            'riwayat' => ['Aktivitas', 'Rincian Perubahan', 'Pelaksana', 'Waktu'],
+            'riwayat' => ['Aktivitas', 'Pengungsi', 'Rincian Perubahan', 'Pelaksana', 'Waktu'],
             'prioritas' => ['ID Internal', 'Nama', 'Kebangsaan', 'Lokasi', 'Kelengkapan'],
             default => [
                 'ID Internal',
@@ -199,8 +199,12 @@ class ReportExportService
 
     protected function historyRows(): Collection
     {
+        // Riwayat lama belum menyimpan nama; diambil dari data pengungsi yang masih ada.
+        $names = $this->data->refugees()->mapWithKeys(fn (Record $item) => [(string) $item->id => (string) $item->name]);
+
         return $this->data->history()->map(fn (Record $item) => [
             $item->title ?: '-',
+            $item->refugee_name ?: ($names->get((string) $item->refugee_id) ?: '-'),
             $item->detail ?: '-',
             $item->actor ?: '-',
             $item->time ?: '-',

@@ -276,7 +276,15 @@ class DocumentController extends Controller
             'reason' => 'Penghapusan dokumen',
         ]);
 
-        $this->syncRefugeeDocumentStatus((string) $existing->refugee_id);
+        /*
+         * Dokumen wajib yang dihapus dicatat ulang sebagai Belum Lengkap,
+         * supaya kekurangannya tetap terlihat di menu dan laporan Dokumen.
+         */
+        $refugee = $this->refugees->find((string) $existing->refugee_id);
+
+        if ($refugee !== null) {
+            app(RefugeeRecordSync::class)->syncDocuments($refugee, [], $this->currentActorName());
+        }
 
         return redirect()
             ->route('documents.index')
