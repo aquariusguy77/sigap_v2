@@ -21,10 +21,11 @@
     <label class="table-meta" for="coordinatePaste">Titik Lokasi <span style="opacity:.7;">(opsional)</span></label>
     <input class="control" type="text" id="coordinatePaste" name="coordinate_paste"
            value="{{ old('coordinate_paste') }}"
-           placeholder="Tempel di sini: -7.348123, 112.727456 atau tautan Google Maps">
+           placeholder="Tempel koordinat atau tautan Google Maps di sini">
+    <div class="table-meta" id="coordinatePasteStatus" style="margin-top:6px;" aria-live="polite"></div>
     <div class="table-meta" style="margin-top:6px;">
-        Ketuk titik rumahnya di peta di bawah, atau buka Google Maps di titik rumah pengungsi,
-        tekan lama pada titiknya, lalu salin koordinat yang muncul dan tempel di kolom ini.
+        Ketuk titik rumahnya di peta di bawah, atau tempel tautan dari tombol <strong>Bagikan</strong>
+        di Google Maps maupun angka koordinatnya. Pin akan berpindah ke titik tersebut.
     </div>
     @error('coordinate_paste')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
 </div>
@@ -66,30 +67,97 @@
 <script>
     (() => {
         const paste = document.getElementById('coordinatePaste');
+        const status = document.getElementById('coordinatePasteStatus');
         const latInput = document.getElementById('latitudeInput');
         const lngInput = document.getElementById('longitudeInput');
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
         /*
-         * Pola yang sama dengan yang dipakai di sisi server, supaya hasilnya
-         * konsisten baik JavaScript aktif maupun tidak.
+         * Pola yang sama dengan GoogleMapsLinkResolver di sisi server. Pada
+         * tautan tempat, "!3d…!4d…" adalah letak pin, sedangkan "@…" hanya
+         * pusat tampilan peta, jadi pin didahulukan.
          */
         const bacaKoordinat = (teks) => {
-            const t = (teks || '').trim();
+            let t = (teks || '').trim();
             if (!t) return null;
-            const url = t.match(/@(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)/);
-            if (url) return [url[1], url[2]];
-            const pasangan = t.match(/(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
-            return pasangan ? [pasangan[1], pasangan[2]] : null;
+            try { t = decodeURIComponent(t); } catch (e) { /* biarkan apa adanya */ }
+            const angka = '(-?\\d{1,3}\\.\\d+)';
+            const pola = [
+                new RegExp('!3d' + angka + '!4d' + angka),
+                new RegExp('@' + angka + ',\\s*' + angka),
+                new RegExp('[?&](?:q|query|ll|center|destination|daddr)=' + angka + ',\\s*\\+?' + angka),
+                new RegExp(angka + '\\s*,\\s*' + angka),
+            ];
+            for (const p of pola) {
+                const m = t.match(p);
+                if (m) return [m[1], m[2]];
+            }
+            return null;
         };
 
-        paste?.addEventListener('input', () => {
-            const titik = bacaKoordinat(paste.value);
-            if (!titik) return;
+        // Tautan bagikan dari HP tidak memuat angka; titiknya dibaca server.
+        const tautanPendek = (teks) => /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl|g\.co)\//i.test((teks || '').trim());
+
+        const tulisStatus = (pesan, galat = false) => {
+            if (!status) return;
+            status.textContent = pesan;
+            status.style.color = galat ? 'var(--danger)' : '';
+        };
+
+        const terapkan = (titik) => {
             if (latInput) latInput.value = titik[0];
             if (lngInput) lngInput.value = titik[1];
-            if (window.__sigapPindahkanPenanda) {
-                window.__sigapPindahkanPenanda(parseFloat(titik[0]), parseFloat(titik[1]));
+            window.__sigapPindahkanPenanda?.(parseFloat(titik[0]), parseFloat(titik[1]));
+            tulisStatus('Pin dipindahkan ke ' + titik[0] + ', ' + titik[1] + '. Periksa letaknya di peta.');
+        };
+
+        let urutan = 0;
+
+        const proses = async () => {
+            const teks = paste.value;
+            const nomor = ++urutan;
+
+            if (!teks.trim()) {
+                tulisStatus('');
+                return;
             }
+
+            const titik = bacaKoordinat(teks);
+            if (titik) {
+                terapkan(titik);
+                return;
+            }
+
+            if (!tautanPendek(teks)) {
+                tulisStatus('Titik lokasi tidak terbaca dari teks ini.', true);
+                return;
+            }
+
+            tulisStatus('Membaca tautan Google Maps…');
+
+            try {
+                const res = await fetch(@json(route('maps.resolve')), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf || '' },
+                    body: JSON.stringify({ link: teks.trim() }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (nomor !== urutan) return;
+
+                if (res.ok && data.latitude && data.longitude) {
+                    terapkan([String(data.latitude), String(data.longitude)]);
+                } else {
+                    tulisStatus(data.message || 'Titik lokasi tidak ditemukan pada tautan ini.', true);
+                }
+            } catch (e) {
+                if (nomor === urutan) tulisStatus('Tautan belum bisa dibaca. Periksa sambungan internet, lalu tempel ulang.', true);
+            }
+        };
+
+        let jeda = null;
+        paste?.addEventListener('input', () => {
+            clearTimeout(jeda);
+            jeda = setTimeout(proses, 350);
         });
     })();
 </script>

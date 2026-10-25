@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\MapLinkController;
 use App\Http\Controllers\PlacementController;
 use App\Http\Controllers\RefugeeController;
 use App\Http\Controllers\ReportController;
@@ -19,6 +20,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(EnsureSigapAuthenticated::class)->group(function (): void {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::post('/peta/baca-tautan', [MapLinkController::class, 'resolve'])->name('maps.resolve');
     Route::get('/data-pengungsi', [RefugeeController::class, 'index'])->name('refugees.index');
     Route::get('/data-pengungsi/tambah', [RefugeeController::class, 'create'])
         ->middleware(EnsureSigapAbility::class . ':manage-refugees')
