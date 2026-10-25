@@ -91,6 +91,9 @@ Route::middleware(EnsureSigapAuthenticated::class)->group(function (): void {
     Route::get('/laporan/{report}/unduh/pdf', [ReportController::class, 'exportPdf'])
         ->middleware(EnsureSigapAbility::class . ':view-reports')
         ->name('reports.export.pdf');
+    Route::post('/laporan/selaraskan', [ReportController::class, 'backfill'])
+        ->middleware(EnsureSigapAbility::class . ':full-access')
+        ->name('reports.backfill');
     Route::get('/pengaturan', [SettingController::class, 'index'])
         ->middleware(EnsureSigapAbility::class . ':manage-settings')
         ->name('settings.index');

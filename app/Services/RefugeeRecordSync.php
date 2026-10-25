@@ -148,6 +148,17 @@ class RefugeeRecordSync
             }
         }
 
+        // Nama yang diubah ikut diperbarui pada dokumen yang tidak diunggah ulang.
+        foreach ($this->documentsFor((string) $refugee->id) as $document) {
+            if ($document->refugee_name !== $refugee->name) {
+                try {
+                    $this->documents->update((string) $document->id, ['refugee_name' => $refugee->name]);
+                } catch (FirebaseWriteException) {
+                    // Hanya salinan nama; dokumennya sendiri tetap utuh.
+                }
+            }
+        }
+
         foreach (config('sigap.reference.document_types', []) as $type) {
             if ($this->documentFor((string) $refugee->id, $type) !== null) {
                 continue;
@@ -215,10 +226,140 @@ class RefugeeRecordSync
         }
     }
 
+    /**
+     * Menghapus penempatan dan dokumen milik pengungsi yang dihapus.
+     *
+     * Tanpa ini, pengungsi yang sudah dihapus tetap tercantum di menu dan
+     * laporan Penempatan maupun Dokumen.
+     *
+     * @return array<int, string> pesan kegagalan, bila ada
+     */
+    public function deleteRelated(string $refugeeId): array
+    {
+        $errors = [];
+
+        $placements = $this->placements->all()->filter(fn (Record $item) => (string) $item->refugee_id === $refugeeId);
+
+        foreach ($placements as $placement) {
+            try {
+                $this->placements->delete((string) $placement->id);
+            } catch (FirebaseWriteException $e) {
+                $errors[] = 'Penempatan: ' . $e->getMessage();
+            }
+        }
+
+        foreach ($this->documentsFor($refugeeId) as $document) {
+            try {
+                $this->documents->delete((string) $document->id);
+                $this->firebaseStorage->forgetFromRealtimeDatabase($document->storage_key);
+            } catch (FirebaseWriteException $e) {
+                $errors[] = 'Dokumen: ' . $e->getMessage();
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Melengkapi data pengungsi yang tercatat sebelum penyelarasan ini ada.
+     *
+     * Pengungsi lama tidak punya penempatan maupun catatan dokumen, sehingga
+     * tidak muncul di menu dan laporan Penempatan maupun Dokumen. Penempatan
+     * dibuat dari Lokasi Aktif-nya; pengungsi mandiri belum punya alamat,
+     * jadi penempatannya ditandai Perlu Verifikasi agar segera dilengkapi.
+     *
+     * Ketiga node dibaca sekali saja di awal. Membacanya ulang untuk setiap
+     * pengungsi akan mengunduh seluruh node berkali-kali, dan pada Vercel
+     * permintaan semacam itu dapat melewati batas waktu.
+     *
+     * @return array{placements: int, documents: int, errors: array<int, string>}
+     */
+    public function backfill(string $actor): array
+    {
+        $placedIds = $this->placements->all()->pluck('refugee_id')->map(fn ($id) => (string) $id)->flip();
+        $documentsByRefugee = $this->documents->all()->groupBy(fn (Record $item) => (string) $item->refugee_id);
+        $wajib = config('sigap.reference.document_types', []);
+        $houses = config('sigap.reference.community_houses', []);
+
+        $created = ['placements' => 0, 'documents' => 0, 'errors' => []];
+
+        foreach ($this->refugees->all() as $refugee) {
+            $id = (string) $refugee->id;
+
+            try {
+                if (! $placedIds->has($id)) {
+                    $mandiri = $refugee->location === self::LOKASI_MANDIRI;
+                    $house = in_array($refugee->location, $houses, true) ? $refugee->location : null;
+
+                    if ($mandiri || $house !== null) {
+                        $this->placements->create([
+                            'refugee_id' => $id,
+                            'refugee_name' => $refugee->name,
+                            'category' => $mandiri ? 'mandiri' : 'iom',
+                            'community_house' => $house,
+                            'entered_at' => $refugee->registered_at ?? now()->toDateString(),
+                            'placement_status' => $mandiri ? 'Perlu Verifikasi' : 'Aktif',
+                            'notes' => $mandiri ? 'Alamat belum dicatat. Lengkapi lewat tombol Ubah.' : null,
+                        ]);
+                        $created['placements']++;
+                    }
+                }
+
+                $existing = ($documentsByRefugee->get($id) ?? collect())
+                    ->pluck('document_type')->map(fn ($type) => (string) $type)->all();
+                $statuses = ($documentsByRefugee->get($id) ?? collect())
+                    ->groupBy(fn (Record $item) => (string) $item->document_type)
+                    ->map(fn ($items) => $items->pluck('verification_status')->all());
+
+                foreach (array_diff($wajib, $existing) as $type) {
+                    $this->documents->create([
+                        'refugee_id' => $id,
+                        'refugee_name' => $refugee->name,
+                        'document_type' => $type,
+                        'verification_status' => 'Belum Lengkap',
+                        'uploaded_at' => now()->toIso8601String(),
+                        'uploaded_by' => $actor,
+                        'notes' => 'Berkas belum diunggah.',
+                    ]);
+                    $created['documents']++;
+                }
+
+                $perJenis = collect($wajib)->map(function (string $type) use ($statuses) {
+                    $list = $statuses->get($type, []);
+
+                    return match (true) {
+                        in_array('Lengkap', $list, true) => 'Lengkap',
+                        in_array('Perlu Verifikasi', $list, true) => 'Perlu Verifikasi',
+                        default => 'Belum Lengkap',
+                    };
+                });
+
+                $status = match (true) {
+                    $perJenis->contains('Belum Lengkap') => 'Belum Lengkap',
+                    $perJenis->contains('Perlu Verifikasi') => 'Perlu Verifikasi',
+                    default => 'Lengkap',
+                };
+
+                if ($refugee->document_status !== $status) {
+                    $this->refugees->update($id, ['document_status' => $status]);
+                }
+            } catch (FirebaseWriteException $e) {
+                $created['errors'][] = ($refugee->name ?: $id) . ': ' . $e->getMessage();
+            }
+        }
+
+        return $created;
+    }
+
     public function placementFor(string $refugeeId): ?Record
     {
         return $this->placements->all()
             ->first(fn (Record $item) => (string) $item->refugee_id === $refugeeId);
+    }
+
+    protected function documentsFor(string $refugeeId): \Illuminate\Support\Collection
+    {
+        return $this->documents->all()->filter(fn (Record $item) => (string) $item->refugee_id === $refugeeId);
     }
 
     protected function documentFor(string $refugeeId, string $type): ?Record

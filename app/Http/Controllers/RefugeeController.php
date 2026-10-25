@@ -219,9 +219,13 @@ class RefugeeController extends Controller
             'reason' => 'Penghapusan data',
         ]);
 
+        // Penempatan dan dokumennya ikut dihapus agar tidak tertinggal di menu dan laporan.
+        $errors = $this->recordSync->deleteRelated($refugee);
+
         return redirect()
             ->route('refugees.index')
-            ->with('status', 'Data pengungsi berhasil dihapus.');
+            ->with('status', 'Data pengungsi berhasil dihapus.')
+            ->with('uploadErrors', $errors);
     }
 
     protected function findOrFail(string $id): Record

@@ -37,6 +37,21 @@
                 </article>
             @endforeach
         </div>
+
+        @if ($canDeleteRefugees)
+            <div class="subtle-box" style="margin-top:18px;">
+                <h4>Data pengungsi lama belum muncul di laporan Penempatan atau Dokumen?</h4>
+                <p class="table-meta" style="margin:6px 0 12px;">
+                    Pengungsi yang dicatat sebelum pembaruan ini belum punya data penempatan dan catatan dokumen.
+                    Tombol ini melengkapinya dari Lokasi Aktif masing-masing. Pengungsi mandiri ditandai
+                    <strong>Perlu Verifikasi</strong> karena alamatnya belum dicatat. Data yang sudah lengkap tidak diubah.
+                </p>
+                <form method="POST" action="{{ route('reports.backfill') }}" onsubmit="return confirm('Lengkapi penempatan dan catatan dokumen untuk data pengungsi lama?');">
+                    @csrf
+                    <button class="btn btn-ghost btn-sm" type="submit">Selaraskan data lama</button>
+                </form>
+            </div>
+        @endif
     </section>
 
     <section class="panel" style="margin-top:14px;">

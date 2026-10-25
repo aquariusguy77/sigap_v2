@@ -79,7 +79,7 @@ class ReportExportService
     {
         return match ($key) {
             'dokumen' => ['Jenis Dokumen', 'Pengungsi', 'Nama Berkas', 'Status Verifikasi', 'Tanggal Unggah'],
-            'penempatan' => ['Pengungsi', 'Kategori', 'Lokasi / Alamat', 'Masuk', 'Keluar', 'Status'],
+            'penempatan' => ['Pengungsi', 'Kategori', 'Lokasi / Alamat', 'Titik Koordinat', 'Masuk', 'Keluar', 'Status'],
             'riwayat' => ['Aktivitas', 'Rincian Perubahan', 'Pelaksana', 'Waktu'],
             'prioritas' => ['ID Internal', 'Nama', 'Kebangsaan', 'Lokasi', 'Kelengkapan'],
             default => [
@@ -133,6 +133,8 @@ class ReportExportService
 
     protected function refugeeRows(): Collection
     {
+        $addresses = $this->mandiriAddresses();
+
         return $this->data->refugees()->map(fn (Record $item) => [
             $item->internal_id ?: '-',
             $item->name ?: '-',
@@ -140,9 +142,33 @@ class ReportExportService
             $item->unhcr_number ?: '-',
             $item->phone ?: '-',
             $item->status ?: '-',
-            $item->location ?: '-',
+            $this->locationLabel($item, $addresses),
             $item->document_status ?: '-',
         ])->values();
+    }
+
+    /**
+     * Alamat pengungsi mandiri per id pengungsi, diambil dari penempatannya.
+     *
+     * @return Collection<string, string>
+     */
+    protected function mandiriAddresses(): Collection
+    {
+        return $this->data->placements()
+            ->filter(fn (Record $item) => $item->is_mandiri && filled($item->address))
+            ->mapWithKeys(fn (Record $item) => [(string) $item->refugee_id => (string) $item->address]);
+    }
+
+    /**
+     * "Pengungsi Mandiri" saja tidak memberi tahu di mana orangnya tinggal,
+     * jadi alamatnya ikut dicantumkan.
+     */
+    protected function locationLabel(Record $item, Collection $addresses): string
+    {
+        $location = $item->location ?: '-';
+        $address = $addresses->get((string) $item->id);
+
+        return $address ? $location . ' — ' . $address : $location;
     }
 
     protected function documentRows(): Collection
@@ -163,6 +189,8 @@ class ReportExportService
             $item->category_label ?: '-',
             // Community House bagi yang difasilitasi IOM, alamat bagi yang mandiri.
             $item->is_mandiri ? ($item->address ?: '-') : ($item->community_house ?: '-'),
+            // Bisa ditempel langsung ke kolom pencarian Google Maps.
+            filled($item->latitude) && filled($item->longitude) ? $item->latitude . ', ' . $item->longitude : '-',
             $this->date($item->entered_at),
             $this->date($item->exited_at),
             $item->placement_status ?: '-',
@@ -181,13 +209,15 @@ class ReportExportService
 
     protected function priorityRows(): Collection
     {
+        $addresses = $this->mandiriAddresses();
+
         return $this->data->refugees()
             ->filter(fn (Record $item) => in_array($item->document_status, ['Perlu Verifikasi', 'Belum Lengkap'], true))
             ->map(fn (Record $item) => [
                 $item->internal_id ?: '-',
                 $item->name ?: '-',
                 $item->nationality ?: '-',
-                $item->location ?: '-',
+                $this->locationLabel($item, $addresses),
                 $item->document_status ?: '-',
             ])
             ->values();

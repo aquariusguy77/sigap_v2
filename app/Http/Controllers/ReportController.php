@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Firebase\ReportLogRepository;
+use App\Services\RefugeeRecordSync;
 use App\Services\ReportExportService;
 use App\Services\SigapDataService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -30,6 +32,28 @@ class ReportController extends Controller
         ]);
 
         return view('reports.index', $data);
+    }
+
+    /**
+     * Melengkapi penempatan dan catatan dokumen bagi pengungsi lama, supaya
+     * mereka ikut tercantum di laporan Penempatan, Dokumen, dan Prioritas.
+     * Aman dijalankan berulang: yang sudah lengkap tidak disentuh.
+     */
+    public function backfill(RefugeeRecordSync $recordSync): RedirectResponse
+    {
+        $this->ensureAbility('full-access');
+
+        $result = $recordSync->backfill($this->currentActorName());
+
+        $status = $result['placements'] === 0 && $result['documents'] === 0
+            ? 'Semua data pengungsi sudah lengkap; tidak ada yang perlu diselaraskan.'
+            : 'Penyelarasan selesai: ' . $result['placements'] . ' penempatan dan '
+                . $result['documents'] . ' catatan dokumen ditambahkan.';
+
+        return redirect()
+            ->route('reports.index')
+            ->with('status', $status)
+            ->with('uploadErrors', $result['errors']);
     }
 
     /**
