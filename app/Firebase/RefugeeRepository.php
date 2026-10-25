@@ -18,6 +18,10 @@ class RefugeeRepository extends Repository
         'document_status',
         'notes',
         'registered_at',
+        // Diisi Supervisor saat mengembalikan data agar petugas tahu yang perlu diperbaiki.
+        'verification_note',
+        'verified_by',
+        'verified_at',
     ];
 
     protected array $dates = ['registered_at'];

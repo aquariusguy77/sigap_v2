@@ -144,6 +144,7 @@
                         'manage-settings' => 'Kelola pengaturan',
                         'review-changes' => 'Tinjau perubahan data',
                         'verify-documents' => 'Verifikasi dokumen',
+                        'verify-refugees' => 'Verifikasi data pengungsi',
                     ];
                 @endphp
                 @foreach ($roles as $key => $role)

@@ -35,6 +35,9 @@ Route::middleware(EnsureSigapAuthenticated::class)->group(function (): void {
     Route::put('/data-pengungsi/{refugee}', [RefugeeController::class, 'update'])
         ->middleware(EnsureSigapAbility::class . ':manage-refugees')
         ->name('refugees.update');
+    Route::patch('/data-pengungsi/{refugee}/verifikasi', [RefugeeController::class, 'verify'])
+        ->middleware(EnsureSigapAbility::class . ':verify-refugees')
+        ->name('refugees.verify');
     Route::delete('/data-pengungsi/{refugee}', [RefugeeController::class, 'destroy'])
         ->middleware(EnsureSigapAbility::class . ':full-access')
         ->name('refugees.destroy');

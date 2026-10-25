@@ -33,6 +33,39 @@
         </div>
     </section>
 
+    @if ($refugee->status === 'Perlu Verifikasi' && filled($refugee->verification_note))
+        <section class="panel" style="border-left:4px solid var(--danger);">
+            <span class="section-tag"><x-icon name="alert" class="chip-icon" />Dikembalikan Supervisor</span>
+            <p style="margin-top:8px;">{{ $refugee->verification_note }}</p>
+            <p class="table-meta">{{ $refugee->verified_by ?: 'Supervisor' }}. Perbaiki lewat <strong>Ubah data pengungsi</strong>, lalu simpan; data akan diperiksa ulang.</p>
+        </section>
+    @endif
+
+    @if ($canVerifyRefugees)
+        <section class="panel">
+            <div class="section-head">
+                <div>
+                    <span class="section-tag"><x-icon name="shield" class="chip-icon" />Verifikasi Supervisor</span>
+                    <h3>Periksa data pengungsi ini</h3>
+                    <p class="section-intro">Cocokkan identitas, tanggal registrasi, dan lokasi hunian dengan berkas aslinya, lalu terima atau kembalikan ke petugas. Berkas dokumen diverifikasi terpisah di menu Dokumen.</p>
+                </div>
+                <span class="badge">{{ $refugee->status }}</span>
+            </div>
+            <form method="POST" action="{{ route('refugees.verify', $refugee) }}">
+                @csrf
+                @method('PATCH')
+                <label class="table-meta" for="kolom-verification-note">Catatan untuk petugas (wajib bila dikembalikan)</label>
+                <textarea id="kolom-verification-note" class="control" name="verification_note" rows="3" style="width:100%;resize:vertical;" maxlength="1000">{{ old('verification_note') }}</textarea>
+                @error('verification_note')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
+                @error('decision')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
+                    <button class="btn btn-gold" type="submit" name="decision" value="Aktif">Terima — Aktif</button>
+                    <button class="btn btn-ghost" type="submit" name="decision" value="Perlu Verifikasi">Kembalikan ke petugas</button>
+                </div>
+            </form>
+        </section>
+    @endif
+
     @if (filled($placement))
         @include('partials._peta-lokasi', ['peta' => $placement, 'judul' => 'Menuju tempat tinggal ' . $refugee->name])
     @endif

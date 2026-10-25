@@ -1,14 +1,15 @@
 <div class="wizard-panel" data-step-panel="2" style="margin-top:18px;display:none;">
     <div class="double-grid" style="margin-top:0;">
+        {{--
+            Status tidak lagi dipilih petugas. Data baru maupun yang diubah
+            otomatis Perlu Verifikasi, lalu Supervisor yang menetapkannya Aktif.
+        --}}
         <div>
-            <label class="table-meta" for="kolom-status">Status</label>
-            <select id="kolom-status" class="control" name="status" required>
-                <option value="">Pilih status</option>
-                @foreach ($statusOptions as $item)
-                    <option value="{{ $item }}" @selected($selectedStatus === $item)>{{ $item }}</option>
-                @endforeach
-            </select>
-            @error('status')<div class="table-meta" style="color:var(--danger);margin-top:6px;">{{ $message }}</div>@enderror
+            <span class="table-meta">Status</span>
+            <div class="control" style="display:flex;align-items:center;" aria-readonly="true">
+                {{ $refugee->status ?? null ? $refugee->status : 'Perlu Verifikasi' }}
+            </div>
+            <div class="table-meta" style="margin-top:6px;">Ditetapkan Supervisor. Data baru dan data yang diubah menunggu verifikasi.</div>
         </div>
         <div>
             <label class="table-meta" for="kolom-registered-at">Tanggal Registrasi</label>

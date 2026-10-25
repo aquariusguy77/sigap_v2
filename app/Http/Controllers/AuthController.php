@@ -92,8 +92,13 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // Dikirim partials._sesi-tab saat aplikasi dibuka lagi setelah tabnya ditutup.
+        $pesan = $request->input('alasan') === 'tab-ditutup'
+            ? 'Sesi diakhiri karena aplikasi sempat ditutup. Silakan masuk kembali.'
+            : 'Anda sudah keluar dari sistem.';
+
         return redirect()
             ->route('login')
-            ->with('status', 'Anda sudah keluar dari sistem.');
+            ->with('status', $pesan);
     }
 }

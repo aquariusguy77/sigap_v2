@@ -34,7 +34,11 @@ class RefugeeUpsertRequest extends FormRequest
              */
             'phone' => ['nullable', 'string', 'min:7', 'max:25', 'regex:/^[0-9+][0-9\s\-]*$/'],
             'unhcr_number' => ['nullable', 'string', 'max:100', 'regex:/^[A-Z0-9\-\/]+$/'],
-            'status' => ['required', Rule::in(config('sigap.reference.refugee_statuses', []))],
+            /*
+             * Status data tidak lagi dipilih petugas. Data baru maupun yang
+             * diubah otomatis berstatus Perlu Verifikasi, dan hanya Supervisor
+             * yang menetapkannya Aktif lewat tombol verifikasi.
+             */
             'location' => ['required', Rule::in(config('sigap.reference.refugee_locations', []))],
 
             /*
@@ -141,7 +145,6 @@ class RefugeeUpsertRequest extends FormRequest
             'phone.regex' => 'Nomor telepon hanya boleh berisi angka, spasi, tanda hubung, dan tanda + di awal.',
             'phone.min' => 'Nomor telepon terlalu pendek untuk dapat dihubungi.',
             'unhcr_number.regex' => 'Nomor UNHCR hanya boleh berisi huruf kapital, angka, garis miring, dan tanda hubung.',
-            'status.in' => 'Status data harus Aktif atau Perlu Verifikasi.',
             'documents.*.file.mimes' => 'Berkas dokumen harus berupa PDF, JPG, JPEG, atau PNG.',
             'documents.*.file.max' => 'Ukuran tiap berkas dokumen maksimal 5 MB.',
             'location.in' => 'Lokasi harus CH Puspa Agro, CH Green Bamboo, atau Pengungsi Mandiri.',
@@ -161,7 +164,6 @@ class RefugeeUpsertRequest extends FormRequest
             'nationality' => 'kebangsaan',
             'phone' => 'nomor telepon',
             'unhcr_number' => 'nomor UNHCR',
-            'status' => 'status data',
             'location' => 'lokasi aktif',
             'notes' => 'catatan',
             'registered_at' => 'tanggal registrasi',
@@ -176,7 +178,6 @@ class RefugeeUpsertRequest extends FormRequest
             'nationality' => (string) $this->input('nationality'),
             'phone' => $this->input('phone') ?: null,
             'unhcr_number' => $this->input('unhcr_number'),
-            'status' => (string) $this->input('status'),
             'location' => $this->input('location'),
             'notes' => $this->input('notes'),
             'registered_at' => $this->input('registered_at'),

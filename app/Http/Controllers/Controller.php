@@ -50,6 +50,7 @@ abstract class Controller
             'canManageDocuments' => $roleAccess->can('manage-documents'),
             'canDeleteDocuments' => $roleAccess->can('full-access'),
             'canVerifyDocuments' => $roleAccess->holds('verify-documents'),
+            'canVerifyRefugees' => $roleAccess->holds('verify-refugees'),
             'canReviewChanges' => $roleAccess->can('review-changes'),
             'canViewReports' => $roleAccess->can('view-reports'),
             'canManageSettings' => $roleAccess->can('manage-settings'),

@@ -45,6 +45,7 @@
         "APP_LOCALE": "id",
         "LOG_CHANNEL": "stderr",
         "SESSION_DRIVER": "firebase",
+        "SESSION_EXPIRE_ON_CLOSE": "true",
         "CACHE_STORE": "array",
         "QUEUE_CONNECTION": "sync",
         "APP_CONFIG_CACHE": "/tmp/config.php",

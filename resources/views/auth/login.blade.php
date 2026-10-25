@@ -47,7 +47,9 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login.store') }}">
+        {{-- Penanda tab yang dibaca partials._sesi-tab: sesi ini dimulai dari tab ini. --}}
+        <form method="POST" action="{{ route('login.store') }}"
+              onsubmit="try { sessionStorage.setItem('sigap.tab-aktif', '1'); } catch (e) {}">
             @csrf
 
             <div class="auth-field">

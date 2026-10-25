@@ -35,7 +35,7 @@ class RoleAccessService
             ],
             'supervisor' => [
                 'label' => 'Supervisor',
-                'abilities' => ['review-changes', 'verify-documents', 'view-reports'],
+                'abilities' => ['review-changes', 'verify-documents', 'verify-refugees', 'view-reports'],
             ],
         ];
     }
@@ -51,7 +51,7 @@ class RoleAccessService
             [
                 'step' => 'Pemeriksaan',
                 'actor' => 'Supervisor',
-                'description' => 'Memeriksa perubahan penting, memverifikasi dokumen, dan meninjau mutasi.',
+                'description' => 'Memverifikasi data pengungsi baru maupun yang diubah, memverifikasi dokumen, dan meninjau mutasi.',
             ],
             [
                 'step' => 'Finalisasi',

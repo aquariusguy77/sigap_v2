@@ -1,5 +1,4 @@
 @php
-    $selectedStatus = old('status', $refugee->status ?? '');
     $selectedNationality = old('nationality', $refugee->nationality ?? '');
     $selectedLocation = old('location', $refugee->location ?? '');
 
@@ -11,7 +10,7 @@
      */
     $kolomLangkah = [
         1 => ['internal_id', 'name', 'nationality', 'unhcr_number', 'phone'],
-        2 => ['status', 'registered_at', 'notes'],
+        2 => ['registered_at', 'notes'],
         3 => ['location', 'address', 'latitude', 'longitude', 'coordinate_paste'],
         4 => ['documents', 'documents.*', 'documents.*.file', 'documents.*.type'],
     ];
@@ -44,6 +43,13 @@
             </div>
             <span class="badge">{{ $formMethod === 'POST' ? 'Data baru' : 'Ubah data' }}</span>
         </div>
+
+        @if (($refugee->status ?? null) === 'Perlu Verifikasi' && filled($refugee->verification_note ?? null))
+            <div class="subtle-box" style="margin-top:0;margin-bottom:18px;border-left:4px solid var(--danger);">
+                <h4>Catatan dari Supervisor</h4>
+                <p>{{ $refugee->verification_note }}</p>
+            </div>
+        @endif
 
         @include('refugees._wizard_tabs')
         @include('refugees._step_identitas')

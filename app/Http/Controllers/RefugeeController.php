@@ -5,15 +5,19 @@ namespace App\Http\Controllers;
 use App\Exceptions\FirebaseWriteException;
 use App\Firebase\AuditTrailRepository;
 use App\Firebase\DocumentRepository;
+use App\Firebase\PlacementRepository;
 use App\Firebase\Record;
 use App\Firebase\RefugeeRepository;
 use App\Http\Requests\RefugeeFilterRequest;
 use App\Http\Requests\RefugeeUpsertRequest;
 use App\Services\FirebaseStorageService;
 use App\Services\RefugeeRecordSync;
+use App\Services\RoleAccessService;
 use App\Services\SigapDataService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class RefugeeController extends Controller
@@ -77,7 +81,8 @@ class RefugeeController extends Controller
         $this->ensureAbility('manage-refugees');
 
         try {
-            $refugee = $this->refugees->create($request->payload());
+            // Data baru selalu menunggu pemeriksaan Supervisor.
+            $refugee = $this->refugees->create($request->payload() + ['status' => 'Perlu Verifikasi']);
         } catch (FirebaseWriteException $e) {
             return back()->withInput()->withErrors(['internal_id' => $e->getMessage()]);
         }
@@ -175,8 +180,19 @@ class RefugeeController extends Controller
         $this->ensureAbility('manage-refugees');
         $existing = $this->findOrFail($refugee);
 
+        $payload = $request->payload();
+
+        /*
+         * Data yang isinya berubah kembali menunggu pemeriksaan Supervisor.
+         * Menyimpan ulang tanpa perubahan, atau sekadar mengunggah berkas
+         * yang punya verifikasinya sendiri, tidak mengubah status.
+         */
+        if ($this->dataChanged($existing, $request)) {
+            $payload['status'] = 'Perlu Verifikasi';
+        }
+
         try {
-            $updated = $this->refugees->update($refugee, $request->payload());
+            $updated = $this->refugees->update($refugee, $payload);
         } catch (FirebaseWriteException $e) {
             return back()->withInput()->withErrors(['internal_id' => $e->getMessage()]);
         }
@@ -197,6 +213,107 @@ class RefugeeController extends Controller
             ->route('refugees.index')
             ->with('status', 'Data pengungsi berhasil diperbarui.' . $upload['summary'])
             ->with('uploadErrors', $upload['errors']);
+    }
+
+    /**
+     * Keputusan Supervisor atas data pengungsi: diterima atau dikembalikan.
+     */
+    public function verify(Request $request, string $refugee): RedirectResponse
+    {
+        // Khusus Supervisor; full-access milik Admin sengaja tidak berlaku di sini.
+        abort_unless(
+            app(RoleAccessService::class)->holds('verify-refugees'),
+            403,
+            'Verifikasi data pengungsi hanya dapat dilakukan Supervisor.'
+        );
+        $existing = $this->findOrFail($refugee);
+
+        $validated = $request->validate([
+            'decision' => ['required', Rule::in(['Aktif', 'Perlu Verifikasi'])],
+            'verification_note' => ['nullable', 'required_if:decision,Perlu Verifikasi', 'string', 'max:1000'],
+        ], [
+            'decision.in' => 'Pilih Terima atau Kembalikan.',
+            'verification_note.required_if' => 'Tuliskan bagian yang perlu diperbaiki agar petugas tahu apa yang harus diubah.',
+        ]);
+
+        $diterima = $validated['decision'] === 'Aktif';
+
+        try {
+            $updated = $this->refugees->update($refugee, [
+                'status' => $validated['decision'],
+                'verification_note' => $diterima ? null : $validated['verification_note'],
+                'verified_by' => $this->currentActorName(),
+                'verified_at' => now()->toIso8601String(),
+            ]);
+        } catch (FirebaseWriteException $e) {
+            return back()->withErrors(['decision' => $e->getMessage()]);
+        }
+
+        // Lokasi hunian ikut diperiksa, jadi penempatannya ikut aktif bila letaknya sudah tercatat.
+        $placement = $this->recordSync->placementFor($refugee);
+
+        if ($diterima && $placement !== null && $placement->placement_status === 'Perlu Verifikasi'
+            && ($placement->category !== 'mandiri' || filled($placement->address))) {
+            try {
+                app(PlacementRepository::class)->update((string) $placement->id, ['placement_status' => 'Aktif']);
+            } catch (FirebaseWriteException) {
+                // Status penempatan masih dapat diubah lewat menu Penempatan.
+            }
+        }
+
+        $this->audits->record([
+            'refugee_id' => $refugee,
+            'refugee_name' => $existing->name,
+            'field_name' => 'Status data',
+            'old_value' => $existing->status,
+            'new_value' => $updated->status,
+            'action_label' => $diterima ? 'Data pengungsi diverifikasi' : 'Data pengungsi dikembalikan',
+            'performed_by_name' => $this->currentActorName(),
+            'reason' => $diterima ? 'Pemeriksaan data oleh supervisor' : $validated['verification_note'],
+        ]);
+
+        return redirect()
+            ->route('refugees.show', $refugee)
+            ->with('status', $diterima
+                ? 'Data pengungsi dinyatakan Aktif.'
+                : 'Data pengungsi dikembalikan ke petugas untuk diperbaiki.');
+    }
+
+    /**
+     * Apakah isi data pengungsi atau letak tempat tinggalnya berubah.
+     */
+    protected function dataChanged(Record $existing, RefugeeUpsertRequest $request): bool
+    {
+        $normal = fn ($value) => $value instanceof \DateTimeInterface
+            ? $value->format('Y-m-d')
+            : trim((string) $value);
+
+        foreach ($request->payload() as $field => $value) {
+            if ($normal($value) !== $normal($existing->{$field})) {
+                return true;
+            }
+        }
+
+        $placement = $this->recordSync->placementFor((string) $existing->id);
+
+        foreach ($request->placementPayload() as $field => $value) {
+            $old = $placement?->{$field};
+
+            // Koordinat dibandingkan sebagai angka: "-7.28" sama dengan "-7.280000".
+            if (in_array($field, ['latitude', 'longitude'], true) && is_numeric($value) && is_numeric($old)) {
+                if (abs((float) $value - (float) $old) > 0.0000005) {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if ($normal($value) !== $normal($old)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function destroy(string $refugee): RedirectResponse
@@ -243,7 +360,6 @@ class RefugeeController extends Controller
         $options = $this->sigapDataService->refugeeFilterOptions();
 
         return array_merge([
-            'statusOptions' => $this->sigapDataService->refugeeStatusOptions(),
             'nationalityOptions' => $options['nationalities'],
             'locationOptions' => $this->sigapDataService->refugeeLocationOptions(),
             'documentStatusOptions' => $options['documentStatuses'],

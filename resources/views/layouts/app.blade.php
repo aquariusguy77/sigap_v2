@@ -10,6 +10,7 @@
     <link rel="icon" type="image/png" href="{{ config('branding.logo_url') . '?v=' . config('branding.asset_version') }}">
     <link rel="apple-touch-icon" href="{{ config('branding.logo_url') . '?v=' . config('branding.asset_version') }}">
     @include('sigap.partials.styles')
+    @include('partials._sesi-tab')
 </head>
 <body>
     <script>
